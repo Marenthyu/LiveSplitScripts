@@ -271,7 +271,7 @@ startup
 		settings.Add("splitafter" + i + "accept", false, vars.questnames[i], "acceptquestsug");
 	}
 	
-	print("Startup complete! CREDITS: Marenthyu <marenthyu@marenthyu.de>");
+	print("Startup complete! CREDITS: Marenthyu <marenthyu@marenthyu.de>, Dabomstew");
 	
 }
 init
@@ -294,12 +294,15 @@ split
 		// split if set quest got reported
 		if (settings["splitafterquestreport"] && (current.CompletedQuests - old.CompletedQuests == 1)  && settings["splitafter" + old.CurrentQuest])
 		{
+			print("Quest reported: " + old.CurrentQuest);
 			return true;
 		} // split if set quest got retired
-		else if (settings["splitafterquestretire"] && (current.CompletedQuests - old.CompletedQuests == 0) && settings["splitafter" + old.CurrentQuest + "retire"])
+		else if (settings["splitafterquestretire"] && (current.CompletedQuests - old.CompletedQuests == 0) && (old.CurrentQuest != 0) && settings["splitafter" + old.CurrentQuest + "retire"])
 		{
+			print("Quest retired: " + old.CurrentQuest);
 			return true;
-		} else if (settings["splitafterquestaccept"] && (current.CompletedQuests - old.CompletedQuests == 0) && settings["splitafter" + current.CurrentQuest + "accept"]) {
+		} else if (settings["splitafterquestaccept"] && (current.CompletedQuests - old.CompletedQuests == 0) && (current.CurrentQuest != 0) && settings["splitafter" + current.CurrentQuest + "accept"]) {
+			print("quest accepted: " + current.CurrentQuest);
 			return true;
 		}
 	}
@@ -307,13 +310,14 @@ split
 	// split for second battle
 	if (settings["twobattlesdone"] && !vars.SplittedForBattles && (current.BattlesStarted - vars.InitialBattles >= 2) && (current.EnemiesKilled - vars.InitialKilled >= 7))
 	{
+		print("Second battle split");
 		vars.SplittedForBattles = true;
 		return true;
 	}
 }
 update
 {
-	if (settings["twobattlesdone"] && (current.EnemiesKilled < vars.InitialKilled || current.BattlesStarted < vars.InitialBattles))
+	if (settings["twobattlesdone"] && (current.EnemiesKilled < vars.InitialKilled || current.BattlesStarted < vars.InitialBattles || (old.BattlesStarted == 0 && current.BattlesStarted != 0)))
 	{
 		print("Had lower enemies killed or battles started. Resetting vars to current value.");
 		vars.InitialKilled = current.EnemiesKilled;
