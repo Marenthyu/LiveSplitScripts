@@ -7,13 +7,19 @@ state("Neptune VSSega Hard Girls")
 	int CompletedQuests : 0x437C30, 0x13D38;
 	int BattlesStarted : 0x437C30, 0xE3C;
 	int EnemiesKilled : 0x437C30, 0xE40;
+	short Firstslot : 0x437C30, 0x10E34;
+	short Secondslot : 0x437C30, 0x10E36;
+	short Thirdslot : 0x437C30, 0x10E38;
+	short Fourthslot : 0x437C30, 0x10E3A;
+	string32 Cutscene : 0x437C30, 0xf6c;
 }
 startup
 {
 	print("Autosplitter loading....");
 	
-	vars.InitialBattles = 0;
-	vars.InitialKilled = 0;
+	vars.dot = System.Text.Encoding.GetEncoding("utf-8").GetString(new Byte[] { 0x81, 0x45 });
+	vars.InitialBattles = -1;
+	vars.InitialKilled = -1;
 	vars.SplittedForBattles = false;
 	vars.questnames = new [] {	// Unused & TE
 								"Zero.", "Kill the Time Eater",
@@ -77,15 +83,21 @@ startup
 								};
 	
 	settings.Add("tedeath", true, "Split on Time Eater Death");
+	
+	settings.Add("startnewgame", false, "Start on New Game (use 0.39 Timer start)");
+	
 	settings.Add("notfirstfile", true, "I am not using the first Savefile");
 	settings.Add("startonfile", true, "Start Timer upon loading a Savefile", "notfirstfile");
 	
-	settings.Add("twobattlesdone", true, "Split after killing 7 enemies in two fights after loading a file", "startonfile");
-	settings.SetToolTip("twobattlesdone", "Useful to split after the tutorial battles.");
+	settings.Add("twobattlesdone", false, "Split after killing 7 enemies in two fights after loading a file", "startonfile");
+	settings.SetToolTip("twobattlesdone", "Alternate Tutorial Dungeon Split, may not like saving/loading during a run.");
 	
-	settings.Add("splitafterquestreport", true, "Split after a specific Quest has been reported");
-	settings.Add("splitafterquestretire", true, "Split after a specific Quest has been retired");
-	settings.Add("splitafterquestaccept", true, "Split after a specific Quest has been accepted");
+	// Quest sections
+	settings.Add("quests", true, "Split with Quests");
+	
+	settings.Add("splitafterquestreport", true, "Split after a specific Quest has been reported", "quests");
+	settings.Add("splitafterquestretire", false, "Split after a specific Quest has been retired", "quests");
+	settings.Add("splitafterquestaccept", false, "Split after a specific Quest has been accepted", "quests");
 	
 		settings.Add("questssaturn", true, "Saturn Era", "splitafterquestreport");
 	
@@ -125,7 +137,7 @@ startup
 	
 		settings.Add("retirequestsgg", false, "Game Gear Era", "splitafterquestretire");
 		
-		settings.Add("retirequestsdc", true, "Dreamcast Era", "splitafterquestretire");
+		settings.Add("retirequestsdc", false, "Dreamcast Era", "splitafterquestretire");
 		
 		settings.Add("retirequestsmtr", false, "Macarasco Troll Ruin", "splitafterquestretire");
 		
@@ -150,7 +162,7 @@ startup
 		settings.Add("retirequestsother", false, "Other/Unknown", "splitafterquestretire");
 		
 		
-		settings.Add("acceptquestssaturn", true, "Saturn Era", "splitafterquestaccept");
+		settings.Add("acceptquestssaturn", false, "Saturn Era", "splitafterquestaccept");
 	
 		settings.Add("acceptquestsmd", false, "Mega Drive Era", "splitafterquestaccept");
 	
@@ -185,9 +197,9 @@ startup
 	// QUESTS
 	for (int i=2;i<=20;i++)
 	{
-		settings.Add("splitafter" + i, (i==2 || i==6 || i==9 || i==11), vars.questnames[i], "questssaturn");
+		settings.Add("splitafter" + i, (i==9 || i==11), vars.questnames[i], "questssaturn");
 		settings.Add("splitafter" + i + "retire", false, vars.questnames[i], "retirequestssaturn");
-		settings.Add("splitafter" + i + "accept", (i == 8), vars.questnames[i], "acceptquestssaturn");
+		settings.Add("splitafter" + i + "accept", false, vars.questnames[i], "acceptquestssaturn");
 	}
 	for (int i=21;i<=38;i++)
 	{
@@ -204,7 +216,7 @@ startup
 	for (int i=59;i<=83;i++)
 	{
 		settings.Add("splitafter" + i, false, vars.questnames[i], "questsdc");
-		settings.Add("splitafter" + i + "retire", (i==59), vars.questnames[i], "retirequestsdc");
+		settings.Add("splitafter" + i + "retire", false, vars.questnames[i], "retirequestsdc");
 		settings.Add("splitafter" + i + "accept", false, vars.questnames[i], "acceptquestsdc");
 	}
 	for (int i=84;i<=86;i++)
@@ -271,6 +283,57 @@ startup
 		settings.Add("splitafter" + i + "accept", false, vars.questnames[i], "acceptquestsug");
 	}
 	
+	// Cutscenes
+	settings.Add("cutscenes", true, "Split with Cutscene");
+	
+	settings.Add("Neptune Falls", true, "Neptune Falls", "cutscenes");
+	settings.SetToolTip("Neptune Falls", "Saturn First Visit Split");
+	
+	settings.Add("Segami Transforms", true, "Segami Tranforms", "cutscenes");
+	settings.SetToolTip("Segami Transforms", "Block Dungeon Split");
+	
+	settings.Add("It's Time to Duel", true, "It's Time to Duel", "cutscenes");
+	settings.SetToolTip("It's Time to Duel", "Nepbike Split");
+	
+	settings.Add("Observation Complete", true, "Observation Complete", "cutscenes");
+	settings.SetToolTip("Observation Complete", "'Menuing' Split after Retiring all remaining missions");
+	
+	settings.Add("Defeated by Time Eater", false, "Defeated by Time Eater", "cutscenes");
+	settings.SetToolTip("Defeated by Time Eater", "Die to Bad End Time Eater Battle");
+	
+	settings.Add("Convince Dreamcast", false, "Convince Dreamcast", "cutscenes");
+	settings.SetToolTip("Convince Dreamcast", "defeat Dreamcast 1");
+	
+	settings.Add("Discord with Mega Drive", false, "Discord with Mega Drive", "cutscenes");
+	settings.SetToolTip("Discord with Mega Drive", "defeat Mega Drive 1");
+	
+	settings.Add("Plutia Transforms", false, "Plutia Transforms", "cutscenes");
+	settings.SetToolTip("Plutia Transforms", "defeat the \"Scary Monsters\"");
+	
+	settings.Add("Post-Battle", false, "Post-Battle", "cutscenes");
+	settings.SetToolTip("Post-Battle", "defeat Mega Drive 2");
+	
+	settings.Add("Side with Neptune" + vars.dot + "Victory", false, "Side with Neptune・Victory", "cutscenes");
+	settings.SetToolTip("Side with Neptune" + vars.dot + "Victory", "defeat Saturn 1 (correct choice, 1st branch)");
+	
+	settings.Add("Side with Saturn", false, "Side with Saturn", "cutscenes");
+	settings.SetToolTip("Side with Saturn", "defeat Purple Heart (wrong choice, 1st branch)");
+	
+	settings.Add("Nothing's Changed", false, "Nothing's Changed", "cutscenes");
+	settings.SetToolTip("Nothing's Changed", "defeat Uzume (correct choice, 2nd branch) OR Dreamcast 2 (wrong choice, 2nd branch)");
+	
+	settings.Add("Saturn Era" + vars.dot + "True End", false, "Saturn Era・True End", "cutscenes");
+	settings.SetToolTip("Saturn Era" + vars.dot + "True End", "defeat Saturn 2");
+	
+	settings.Add("Mega Drive Era " + vars.dot + "True End", false, "Mega Drive Era ・True End", "cutscenes");
+	settings.SetToolTip("Mega Drive Era " + vars.dot + "True End", "defeat Iris Heart");
+	
+	settings.Add("Defeat Traitor!", false, "Defeat Traitor!", "cutscenes");
+	settings.SetToolTip("Defeat Traitor!", "defeat TE Seeds");
+	
+	settings.Add("Game Gear Era" + vars.dot + "True End", false, "Game Gear Era・True End", "cutscenes");
+	settings.SetToolTip("Game Gear Era" + vars.dot + "True End", "defeat TE Sprouts");
+	
 	print("Startup complete! CREDITS: Marenthyu <marenthyu@marenthyu.de>, Dabomstew");
 	
 }
@@ -290,36 +353,53 @@ split
 	}
 	
 	// Current Quest changed
-	if (old.CurrentQuest != current.CurrentQuest) {
-		// split if set quest got reported
-		if (settings["splitafterquestreport"] && (current.CompletedQuests - old.CompletedQuests == 1)  && settings["splitafter" + old.CurrentQuest])
-		{
-			print("Quest reported: " + old.CurrentQuest);
-			return true;
-		} // split if set quest got retired
-		else if (settings["splitafterquestretire"] && (current.CompletedQuests - old.CompletedQuests == 0) && (old.CurrentQuest != 0) && settings["splitafter" + old.CurrentQuest + "retire"])
-		{
-			print("Quest retired: " + old.CurrentQuest);
-			return true;
-		} else if (settings["splitafterquestaccept"] && (current.CompletedQuests - old.CompletedQuests == 0) && (current.CurrentQuest != 0) && settings["splitafter" + current.CurrentQuest + "accept"]) {
-			print("quest accepted: " + current.CurrentQuest);
-			return true;
+	if (settings["quests"])
+	{
+		if (old.CurrentQuest != current.CurrentQuest) {
+			// split if set quest got reported
+			if (settings["splitafterquestreport"] && (current.CompletedQuests - old.CompletedQuests == 1)  && settings["splitafter" + old.CurrentQuest])
+			{
+				print("Quest reported: " + old.CurrentQuest);
+				return true;
+			} // split if set quest got retired
+			else if (settings["splitafterquestretire"] && (current.CompletedQuests - old.CompletedQuests == 0) && (old.CurrentQuest != 0) && settings["splitafter" + old.CurrentQuest + "retire"])
+			{
+				print("Quest retired: " + old.CurrentQuest);
+				return true;
+			} else if (settings["splitafterquestaccept"] && (current.CompletedQuests - old.CompletedQuests == 0) && (current.CurrentQuest != 0) && settings["splitafter" + current.CurrentQuest + "accept"]) {
+				print("quest accepted: " + current.CurrentQuest);
+				return true;
+			}
 		}
 	}
-	
-	// split for second battle
-	if (settings["twobattlesdone"] && !vars.SplittedForBattles && (current.BattlesStarted - vars.InitialBattles >= 2) && (current.EnemiesKilled - vars.InitialKilled >= 7))
+	if (settings["notfirstfile"] && settings["startonfile"])
 	{
-		print("Second battle split");
-		vars.SplittedForBattles = true;
-		return true;
+		// split for second battle
+		if (settings["twobattlesdone"] && !vars.SplittedForBattles && (current.BattlesStarted - vars.InitialBattles == 2) && (current.EnemiesKilled - vars.InitialKilled == 7))
+		{
+			print("Second battle split");
+			vars.SplittedForBattles = true;
+			return true;
+		}
+		
+	}
+	
+	// split for cutscene
+	if (settings["cutscenes"])
+	{
+		try {
+			if (!current.Cutscene.Equals(old.Cutscene) && settings[current.Cutscene])
+			{
+				return true;
+			}
+		} catch {}
 	}
 }
 update
 {
-	if (settings["twobattlesdone"] && (current.EnemiesKilled < vars.InitialKilled || current.BattlesStarted < vars.InitialBattles || (old.BattlesStarted == 0 && current.BattlesStarted != 0)))
+	if (settings["twobattlesdone"] && (vars.InitialBattles == -1 && !current.Cutscene.Equals(old.Cutscene)))
 	{
-		print("Had lower enemies killed or battles started. Resetting vars to current value.");
+		print("Initial Battles had not been initialized.");
 		vars.InitialKilled = current.EnemiesKilled;
 		vars.InitialBattles = current.BattlesStarted;
 		print("Corrected to " + vars.InitialKilled + " enemies and " + vars.InitialBattles + " Battles.");
@@ -327,19 +407,21 @@ update
 }
 start
 {
-	if (old.Savefile == 0 && (current.Savefile > 0 && current.Savefile < 50))
+	// New Game
+	if (settings["startnewgame"] && current.Cutscene.Equals("New Game"))
 	{
-		if (settings["startonfile"])
-		{
+		return true;
+	}
+
+	// File load
+	if ((settings["startnewgame"] && current.Cutscene.Equals("New Game")) || (settings["notfirstfile"] && settings["startonfile"] && old.Savefile == 0 && (current.Savefile > 0 && current.Savefile < 50)))
+	{
 			if (settings["twobattlesdone"])
 			{
-				vars.InitialBattles = current.BattlesStarted;
+				vars.InitialBattles = -1;
 				vars.SplittedForBattles = false;
-				vars.InitialKilled = current.EnemiesKilled;
-				
-				print("Initial killed: " + vars.InitialKilled + "; inital battles: " + vars.InitialBattles);
+				vars.InitialKilled = -1;
 			}
 			return true;
-		}
 	}
 }
