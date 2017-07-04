@@ -286,6 +286,9 @@ startup
 	// Cutscenes
 	settings.Add("cutscenes", true, "Split with Cutscene");
 	
+	settings.Add("Explore Library Cont.", true, "Explore Library Cont.", "cutscenes");
+	settings.SetToolTip("Explore Library Cont.", "Tutorial Fights Split");
+	
 	settings.Add("Neptune Falls", true, "Neptune Falls", "cutscenes");
 	settings.SetToolTip("Neptune Falls", "Saturn First Visit Split");
 	
