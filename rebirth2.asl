@@ -42,6 +42,16 @@ startup
 	
 	settings.Add("colosseum", true, "Get colosseum", "startnewgame");
 	settings.SetToolTip("colosseum", "Requires a special variable, so only usable if splitter is started automatically.");
+    
+    settings.Add("holytrueitems", true, "Holy Sword/True Ending Item Splits", "startnewgame");
+    
+    settings.Add("rebeatAE", false, "Rebeat Resort Add Enemies Materials", "holytrueitems");
+    settings.Add("midcompanyAE", false, "Midcompany Add Enemies Materials", "holytrueitems");
+    settings.Add("midcompanyCD", false, "Midcompany Change Dungeon Materials", "holytrueitems");
+    settings.Add("lgeCD", false, "Lowee Global Expo Change Dungeon Materials", "holytrueitems");
+    settings.Add("graveyardAE", false, "Gamindustri Graveyard Add Enemies Materials", "holytrueitems");
+    settings.Add("sag", false, "Symbol Attack Gains Plan", "holytrueitems");
+    settings.Add("woodshell", false, "Wood Shell", "holytrueitems");
 	
 	settings.Add("enemydeath", true, "Split on specific enemy deaths");
 	
@@ -245,50 +255,91 @@ split
 	// Acquire Items
 
 	if(settings["startnewgame"] && vars.itemSplitsHit < vars.itemSplitsActive) {
-		bool hasHBWs = false;
-		bool hasGDs = false;
+		int d60ItemCount = 0;
+        int rebeatAEItemCount = 0;
+        int midcompanyAEItemCount = 0;
+        int midcompanyCDItemCount = 0;
+        int graveyardAEItemCount = 0;
         byte[] inventory = memory.ReadBytes((System.IntPtr) (current.SaveBlock + 0xCA50), (int) (current.InventorySize*4));
         for(int i = 0; i < current.InventorySize; i++) {
             short itemID = BitConverter.ToInt16(inventory, i*4);
-            if(itemID == 919 && settings["spiderwebs"] && !vars.websSplit) {
-                byte amount = inventory[i*4 + 2];
-                if(amount >= 2) {
-                    // do split
-                    vars.websSplit = true;
-                    vars.itemSplitsHit++;
-					print("Split for Spider Webs");
-					
-                    return true;
-                }
-                continue;
+            byte amount = inventory[i*4 + 2];
+            if(itemID == 919 && settings["spiderwebs"] && !vars.websSplit && amount >= 2) {
+                vars.websSplit = true;
+                vars.itemSplitsHit++;
+                print("Split for Spider Webs");
+                return true;
             }
-			if (itemID == 906 && settings["d60Mats"] && !vars.d60Mats) {
-				byte amount = inventory[i*4 + 2];
-				if (amount >= 2) {
-					hasHBWs = true;
-				}
-				continue;
+			else if ((itemID == 906 || itemID == 805) && settings["d60Mats"] && !vars.d60Mats && amount >= 2) {
+                d60ItemCount++;
 			}
-			if (itemID == 805 && settings["d60Mats"] && !vars.d60Mats) {
-				byte amount = inventory[i*4 + 2];
-				if (amount >= 2) {
-					hasGDs = true;
-				}
-				continue;
-			}
-			if (itemID == 652 && settings["colosseum"] && !vars.colosseum) {
+			else if (itemID == 652 && settings["colosseum"] && !vars.colosseum) {
 				vars.colosseum = true;
                 vars.itemSplitsHit++;
 				print("Split for getting colosseum");
 				return true;
 			}
+            else if (settings["rebeatAE"] && !vars.rebeatAE && ((itemID == 871 && amount >= 2) || (itemID == 813 && amount >= 2) || (itemID == 965))) {
+                rebeatAEItemCount++;
+            }
+            else if (settings["midcompanyAE"] && !vars.midcompanyAE && ((itemID == 897 && amount >= 2) || (itemID == 835 && amount >= 2) || (itemID == 984) || (itemID == 802 && amount >= 3))) {
+                midcompanyAEItemCount++;
+            }
+            else if (settings["midcompanyCD"] && !vars.midcompanyCD && ((itemID == 913 && amount >= 2) || (itemID == 907 && amount >= 2))) {
+                midcompanyCDItemCount++;
+            }
+            else if (settings["lgeCD"] && !vars.lgeCD && itemID == 950 && amount >= 5) {
+                vars.lgeCD = true;
+                vars.itemSplitsHit++;
+                print("Split for Lowee Global Expo Change Dungeon");
+                return true;
+            }
+            else if (settings["graveyardAE"] && !vars.graveyardAE && ((itemID == 877 && amount >= 4) || (itemID == 951 && amount >= 3))) {
+                graveyardAEItemCount++;
+            }
+            else if (itemID == 650 && settings["sag"] && !vars.sag) {
+				vars.sag = true;
+                vars.itemSplitsHit++;
+				print("Split for getting Symbol Attack Gains");
+				return true;
+			}
+            else if (itemID == 988 && settings["woodshell"] && !vars.woodshell) {
+				vars.woodshell = true;
+                vars.itemSplitsHit++;
+				print("Split for getting Wood Shell");
+				return true;
+			}
         }
-		if (settings["d60Mats"] && hasGDs && hasHBWs && !vars.d60Mats) {
+		if (settings["d60Mats"] && d60ItemCount == 2 && !vars.d60Mats) {
 			vars.d60Mats = true;
             vars.itemSplitsHit++;
 			print("Split for d60Mats");
 			return true;
 		}
+        if (settings["rebeatAE"] && rebeatAEItemCount == 3 && !vars.rebeatAE) {
+            vars.rebeatAE = true;
+            vars.itemSplitsHit++;
+            print("Split for Rebeat Resort Add Enemies");
+            return true;
+        }
+        if (settings["midcompanyAE"] && midcompanyAEItemCount == 4 && !vars.midcompanyAE) {
+            vars.midcompanyAE = true;
+            vars.itemSplitsHit++;
+            print("Split for Midcompany Add Enemies");
+            return true;
+        }
+        if (settings["midcompanyCD"] && midcompanyCDItemCount == 2 && !vars.midcompanyCD) {
+            vars.midcompanyCD = true;
+            vars.itemSplitsHit++;
+            print("Split for Midcompany Change Dungeon");
+            return true;
+        }
+        if (settings["graveyardAE"] && graveyardAEItemCount == 2 && !vars.graveyardAE) {
+            vars.graveyardAE = true;
+            vars.itemSplitsHit++;
+            print("Split for Gamindustri Graveyard Add Enemies");
+            return true;
+        }
     }
 }
 start
@@ -301,6 +352,13 @@ start
 		vars.websSplit = false;
 		vars.d60Mats = false;
 		vars.colosseum = false;
+        vars.rebeatAE = false;
+        vars.midcompanyAE = false;
+        vars.midcompanyCD = false;
+        vars.lgeCD = false;
+        vars.graveyardAE = false;
+        vars.sag = false;
+        vars.woodshell = false;
         vars.itemSplitsHit = 0;
         vars.itemSplitsActive = 0;
         
@@ -308,6 +366,12 @@ start
         vars.itemSplitsActive += settings["spiderwebs"] ? 1 : 0;
         vars.itemSplitsActive += settings["d60Mats"] ? 1 : 0;
         vars.itemSplitsActive += settings["colosseum"] ? 1 : 0;
+        vars.itemSplitsActive += settings["rebeatAE"] ? 1 : 0;
+        vars.itemSplitsActive += settings["midcompanyAE"] ? 1 : 0;
+        vars.itemSplitsActive += settings["midcompanyCD"] ? 1 : 0;
+        vars.itemSplitsActive += settings["lgeCD"] ? 1 : 0;
+        vars.itemSplitsActive += settings["graveyardAE"] ? 1 : 0;
+        vars.itemSplitsActive += settings["woodshell"] ? 1 : 0;
 		return true;
 	}
 	
