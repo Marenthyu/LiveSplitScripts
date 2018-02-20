@@ -66,6 +66,20 @@ startup
 	
 	settings.Add("metalshelldeath", true, "Metal Shell", "enemydeath");
 	settings.SetToolTip("metalshelldeath", "Lowee Gathering Mission (never killed anywhere else under normal circumstances)");
+    
+    
+    settings.Add("slowrefreshonitems", false, "Slow Refresh Rate w/ Items");
+    settings.SetToolTip("slowrefreshonitems", "Slow down the refresh rate while inventory-related splits are being tested to reduce CPU usage.");
+    
+    // Shares
+    settings.Add("shares", true, "Split with Shares");
+    
+    settings.Add("leanbox50", true, "Split on 50% Leanbox Shares", "shares");
+    settings.Add("lowee50", true, "Split on 50% Lowee Shares", "shares");
+    settings.Add("lastation50", true, "Split on 50% Lastation Shares", "shares");
+    settings.Add("planeptune55", true, "Split on 55% Planeptune Shares", "shares");
+    settings.Add("all15", false, "All Nations 15% Shares", "shares");
+    settings.SetToolTip("all15", "Split when all nations have 15% shares *after* you get 50% Lastation/Lowee/Leanbox.");
 	
 	
 	// Cutscenes
@@ -171,7 +185,7 @@ startup
 	// Conquest
 	settings.Add("cq", true, "Conquest", "cutscenes");
 	
-	settings.Add("Apocalypse - Noire's Farewell", false, "Preperations", "cq");
+	settings.Add("Apocalypse - Noire's Farewell", false, "Preparations", "cq");
 	settings.SetToolTip("Apocalypse - Noire's Farewell", "Menuing split, splits when watching Noire Cutscene");
 	
 	settings.Add("Apocalypse - Loss", true, "Lastation Fight Done", "cq");
@@ -181,6 +195,16 @@ startup
 	settings.Add("Apocalypse - Vert in Danger", true, "Killed Vert", "cq");
 	
 	settings.Add("Apocalypse - No Dying in Vain", true, "Killed Linda. Finally.", "cq");
+    
+    // Holy Sword
+    settings.Add("hsq", true, "Holy Sword", "cutscenes");
+    
+    settings.Add("Apocalypse - Cursed Sword Crushed", false, "Defeat Noire and Uni", "hsq");
+    settings.Add("Apocalypse - Warrior's Finale", false, "Kill CFW Brave", "hsq");
+    settings.Add("Apocalypse - Perverse Finale", false, "Kill CFW Trick", "hsq");
+    settings.Add("Apocalypse - Berserk Finale", false, "Kill CFW Judge", "hsq");
+    settings.Add("Apocalypse - Gamindustri's Hope", false, "Kill CFW Magic", "hsq");
+    settings.Add("Apocalypse - Gleam of the Holy Sword", false, "Kill First Phase DoS Arfoire", "hsq");
 	
 	
 	
@@ -208,6 +232,13 @@ init
     vars.itemSplitsActive = 0;
     vars.armHolyEndSplit = false;
     vars.armTrueEndSplit = false;
+    vars.slowRefresh = false;
+    vars.leanboxSharesSplit = false;
+    vars.loweeSharesSplit = false;
+    vars.lastationSharesSplit = false;
+    vars.planeptuneSharesSplit = false;
+    vars.allSharesSplit = false;
+    refreshRate = 60;
 	
     if (modules.First().ModuleMemorySize == 10620928) {
 		print("Found and confirmed GoG Version");
@@ -269,6 +300,36 @@ split
 			}
 		} catch {}
 	}
+    
+    // split for shares
+    if(settings["shares"])
+    {
+        if(settings["leanbox50"] && current.LeanboxShares >= 50 && !vars.leanboxSharesSplit) {
+            vars.leanboxSharesSplit = true;
+            print("Split for Leanbox Shares >= 50%");
+            return true;
+        }
+        if(settings["lowee50"] && current.LoweeShares >= 50 && !vars.loweeSharesSplit) {
+            vars.loweeSharesSplit = true;
+            print("Split for Lowee Shares >= 50%");
+            return true;
+        }
+        if(settings["lastation50"] && current.LastationShares >= 50 && !vars.lastationSharesSplit) {
+            vars.lastationSharesSplit = true;
+            print("Split for Lastation Shares >= 50%");
+            return true;
+        }
+        if(settings["planeptune55"] && current.PlaneptuneShares >= 55 && !vars.planeptuneSharesSplit) {
+            vars.planeptuneSharesSplit = true;
+            print("Split for Planeptune Shares >= 55%");
+            return true;
+        }
+        if(settings["all15"] && vars.lastationSharesSplit && vars.loweeSharesSplit && vars.leanboxSharesSplit && !vars.allSharesSplit && current.PlaneptuneShares >= 15 && current.LastationShares >= 15 && current.LoweeShares >= 15 && current.LeanboxShares >= 15) {
+            vars.allSharesSplit = true;
+            print("Split for all shares >= 15%");
+            return true;
+        }
+    }
 	
 	// split for Viral Tulips
 	if(settings["startnewgame"] && settings["viraltulips"] && !vars.tulipsSplit) {
@@ -291,6 +352,10 @@ split
 	// Acquire Items
 
 	if(settings["startnewgame"] && vars.itemSplitsHit < vars.itemSplitsActive) {
+        if(settings["slowrefreshonitems"] && !vars.slowRefresh) {
+            refreshRate = 20;
+            vars.slowRefresh = true;
+        }
 		int d60ItemCount = 0;
         int rebeatAEItemCount = 0;
         int midcompanyAEItemCount = 0;
@@ -377,6 +442,10 @@ split
             return true;
         }
     }
+    else if(vars.slowRefresh) {
+        vars.slowRefresh = false;
+        refreshRate = 60;
+    }
 }
 start
 {
@@ -399,6 +468,13 @@ start
         vars.itemSplitsActive = 0;
         vars.armHolyEndSplit = false;
         vars.armTrueEndSplit = false;
+        vars.slowRefresh = false;
+        vars.leanboxSharesSplit = false;
+        vars.loweeSharesSplit = false;
+        vars.lastationSharesSplit = false;
+        vars.planeptuneSharesSplit = false;
+        vars.allSharesSplit = false;
+        refreshRate = 60;
         
         // count item splits
         vars.itemSplitsActive += settings["spiderwebs"] ? 1 : 0;
