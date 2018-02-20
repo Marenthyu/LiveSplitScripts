@@ -29,7 +29,7 @@ startup
 	print("Autosplitter loading....");
 	
 	settings.Add("startnewgame", true, "Start on New Game");
-	settings.SetToolTip("startnewgame", "Start on New Game select - use timer offset xxxx (TBD)");
+	settings.SetToolTip("startnewgame", "Start on New Game select - use timer offset 0.66");
 	
 	settings.Add("viraltulips", true, "Kill 4 Viral Tulips", "startnewgame");
 	settings.SetToolTip("viraltulips", "Requires a special variable, so only usable if splitter is started automatically.");
