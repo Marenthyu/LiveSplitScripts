@@ -1,20 +1,28 @@
 state("NeptuniaRebirth2", "Steam")
 {
 	int SaveBlock : 0x42C0B0;
+    string64 Cutscene : 0x42C0B0, 0xEEC;
 	int EnemyBookSize : 0x42C0B0, 0x783F4;
 	int InventorySize : 0x42C0B0, 0xCA4C;
+    byte PlaneptuneShares : 0x42C0B0, 0xF1C;
+    byte LeanboxShares : 0x42C0B0, 0xF20;
+    byte LastationShares : 0x42C0B0, 0xF24;
+    byte LoweeShares : 0x42C0B0, 0xF28;
     int LDHP_Enemy : 0x43A1F0, 0xC, 0xA0, 0x40;
     int LDN_Enemy : 0x43A1F0, 0xC, 0xA0, 0x8;
-    string64 Cutscene : 0x42C0B0, 0xEEC;
 }
 state("NeptuniaRebirth2", "GoG")
 {
 	int SaveBlock : 0x424F60;
+    string64 Cutscene : 0x424F60, 0xEEC;
 	int EnemyBookSize : 0x424F60, 0x783F4;
 	int InventorySize : 0x424F60, 0xCA4C;
+    byte PlaneptuneShares : 0x424F60, 0xF1C;
+    byte LeanboxShares : 0x424F60, 0xF20;
+    byte LastationShares : 0x424F60, 0xF24;
+    byte LoweeShares : 0x424F60, 0xF28;
     int LDHP_Enemy : 0x4330A0, 0xC, 0xA0, 0x40;
     int LDN_Enemy : 0x4330A0, 0xC, 0xA0, 0x8;
-    string64 Cutscene : 0x424F60, 0xEEC;
 }
 startup
 {
@@ -32,8 +40,8 @@ startup
 	settings.Add("d60Mats", true, "Get Darkness 60 Materials", "startnewgame");
 	settings.SetToolTip("d60Mats", "Requires a special variable, so only usable if splitter is started automatically.");
 	
-	settings.Add("colloseum", true, "Get Colloseum", "startnewgame");
-	settings.SetToolTip("colloseum", "Requires a special variable, so only usable if splitter is started automatically.");
+	settings.Add("colosseum", true, "Get colosseum", "startnewgame");
+	settings.SetToolTip("colosseum", "Requires a special variable, so only usable if splitter is started automatically.");
 	
 	settings.Add("enemydeath", true, "Split on specific enemy deaths");
 	
@@ -172,7 +180,9 @@ init
 	vars.tulipsSplit = false;
 	vars.websSplit = false;
 	vars.d60Mats = false;
-	vars.colloseum = false;
+	vars.colosseum = false;
+    vars.itemSplitsHit = 0;
+    vars.itemSplitsActive = 0;
 	
     if (modules.First().ModuleMemorySize == 10620928) {
 		print("Found and confirmed GoG Version");
@@ -234,7 +244,7 @@ split
 	
 	// Acquire Items
 
-	if(settings["startnewgame"] && ((settings["spiderwebs"] && !vars.websSplit) || (settings["d60Mats"] && !vars.d60Mats) || (settings["colloseum"] && !vars.colloseum))) {
+	if(settings["startnewgame"] && vars.itemSplitsHit < vars.itemSplitsActive) {
 		bool hasHBWs = false;
 		bool hasGDs = false;
         byte[] inventory = memory.ReadBytes((System.IntPtr) (current.SaveBlock + 0xCA50), (int) (current.InventorySize*4));
@@ -245,6 +255,7 @@ split
                 if(amount >= 2) {
                     // do split
                     vars.websSplit = true;
+                    vars.itemSplitsHit++;
 					print("Split for Spider Webs");
 					
                     return true;
@@ -265,16 +276,16 @@ split
 				}
 				continue;
 			}
-			if (itemID == 652 && settings["colloseum"] && !vars.colloseum) {
-				
-				vars.colloseum = true;
-				print("Split for getting colloseum");
+			if (itemID == 652 && settings["colosseum"] && !vars.colosseum) {
+				vars.colosseum = true;
+                vars.itemSplitsHit++;
+				print("Split for getting colosseum");
 				return true;
-				
 			}
         }
 		if (settings["d60Mats"] && hasGDs && hasHBWs && !vars.d60Mats) {
 			vars.d60Mats = true;
+            vars.itemSplitsHit++;
 			print("Split for d60Mats");
 			return true;
 		}
@@ -289,7 +300,14 @@ start
 		vars.tulipsSplit = false;
 		vars.websSplit = false;
 		vars.d60Mats = false;
-		vars.colloseum = false;
+		vars.colosseum = false;
+        vars.itemSplitsHit = 0;
+        vars.itemSplitsActive = 0;
+        
+        // count item splits
+        vars.itemSplitsActive += settings["spiderwebs"] ? 1 : 0;
+        vars.itemSplitsActive += settings["d60Mats"] ? 1 : 0;
+        vars.itemSplitsActive += settings["colosseum"] ? 1 : 0;
 		return true;
 	}
 	
