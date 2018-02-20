@@ -55,8 +55,14 @@ startup
 	
 	settings.Add("enemydeath", true, "Split on specific enemy deaths");
 	
-	settings.Add("dosdeath", true, "Deity Of Sin Arfoire", "enemydeath");
+	settings.Add("dosdeath", true, "Deity Of Sin Arfoire (Normal/Conquest)", "enemydeath");
 	settings.SetToolTip("dosdeath", "End Split, times on last boss hit.");
+    
+    settings.Add("dosdeathholy", false, "Deity Of Sin Arfoire (Holy Sword)", "enemydeath");
+	settings.SetToolTip("dosdeathholy", "End Split, times on last boss hit after first form killed already.");
+    
+    settings.Add("truedeath", false, "True Arfoire (True Ending)", "enemydeath");
+	settings.SetToolTip("truedeath", "End Split, times on last boss hit after first form killed already.");
 	
 	settings.Add("metalshelldeath", true, "Metal Shell", "enemydeath");
 	settings.SetToolTip("metalshelldeath", "Lowee Gathering Mission (never killed anywhere else under normal circumstances)");
@@ -188,11 +194,20 @@ init
 	print("module size: " + modules.First().ModuleMemorySize);
 	
 	vars.tulipsSplit = false;
-	vars.websSplit = false;
-	vars.d60Mats = false;
-	vars.colosseum = false;
+    vars.websSplit = false;
+    vars.d60Mats = false;
+    vars.colosseum = false;
+    vars.rebeatAE = false;
+    vars.midcompanyAE = false;
+    vars.midcompanyCD = false;
+    vars.lgeCD = false;
+    vars.graveyardAE = false;
+    vars.sag = false;
+    vars.woodshell = false;
     vars.itemSplitsHit = 0;
     vars.itemSplitsActive = 0;
+    vars.armHolyEndSplit = false;
+    vars.armTrueEndSplit = false;
 	
     if (modules.First().ModuleMemorySize == 10620928) {
 		print("Found and confirmed GoG Version");
@@ -214,11 +229,32 @@ split
 			print("Enemy " + current.LDN_Enemy + " Died! Splitting!");
 			return true;
 		}
+        if (settings["dosdeathholy"] && vars.armHolyEndSplit && ((old.LDN_Enemy != null && current.LDN_Enemy != null) && (current.LDN_Enemy.Equals("Deity Of Sin Arfoire")) && (old.LDN_Enemy.Equals(current.LDN_Enemy)) && (old.LDHP_Enemy > 0 && current.LDHP_Enemy == 0)))
+		{
+			print("Enemy " + current.LDN_Enemy + " Died! Splitting!");
+			return true;
+		}
+        if (settings["truedeath"] && vars.armTrueEndSplit && ((old.LDN_Enemy != null && current.LDN_Enemy != null) && (current.LDN_Enemy.Equals("True Arfoire")) && (old.LDN_Enemy.Equals(current.LDN_Enemy)) && (old.LDHP_Enemy > 0 && current.LDHP_Enemy == 0)))
+		{
+			print("Enemy " + current.LDN_Enemy + " Died! Splitting!");
+			return true;
+		}
 		if (settings["metalshelldeath"] && ((old.LDN_Enemy != null && current.LDN_Enemy != null) && (current.LDN_Enemy.Equals("Metal Shell")) && (old.LDN_Enemy.Equals(current.LDN_Enemy)) && (old.LDHP_Enemy > 0 && current.LDHP_Enemy == 0)))
 		{
 			print("Enemy " + current.LDN_Enemy + " Died! Splitting!");
 			return true;
 		}
+        try {
+            if(settings["dosdeathholy"] && !vars.armHolyEndSplit && current.Cutscene.Equals("Apocalypse - Gleam of the Holy Sword")) {
+                vars.armHolyEndSplit = true;
+                print("Reached cutscene between Holy Sword DoS Arfoire forms, arming final split.");
+            }
+            if(settings["truedeath"] && !vars.armTrueEndSplit && current.Cutscene.Equals("Final - Nepgear VS. True Arfoire")) {
+                vars.armTrueEndSplit = true;
+                print("Reached cutscene between True Arfoire forms, arming final split.");
+            }
+        }
+        catch {}
 	}
 	
 	
@@ -361,6 +397,8 @@ start
         vars.woodshell = false;
         vars.itemSplitsHit = 0;
         vars.itemSplitsActive = 0;
+        vars.armHolyEndSplit = false;
+        vars.armTrueEndSplit = false;
         
         // count item splits
         vars.itemSplitsActive += settings["spiderwebs"] ? 1 : 0;
