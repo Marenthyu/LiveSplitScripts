@@ -36,9 +36,9 @@ startup
 	
 	settings.Add("viraltulips", true, "Kill 4 Viral Tulips", "killenemies");
 	settings.Add("metalshell", true, "Kill 1 Metal Shell (storyline enemy, first Disc materials)", "killenemies");
-	settings.Add("dosdeath", false, "Deity Of Sin Arfoire (Normal)", "killenemies");
+	settings.Add("dosdeath", true, "Deity Of Sin Arfoire (Normal)", "killenemies");
 	settings.SetToolTip("dosdeath", "End Split, times on last boss hit.");
-	settings.Add("dosdeathcq", false, "Deity Of Sin Arfoire (Conquest)", "killenemies");
+	settings.Add("dosdeathcq", true, "Deity Of Sin Arfoire (Conquest)", "killenemies");
 	settings.SetToolTip("dosdeathcq", "End Split, times on last boss hit.");
 	settings.Add("dosdeathholy", false, "Deity Of Sin Arfoire (Holy Sword)", "killenemies");
 	settings.SetToolTip("dosdeathholy", "End Split, times on last boss hit of second form.");
