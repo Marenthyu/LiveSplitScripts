@@ -29,10 +29,22 @@ startup
 	print("Autosplitter loading....");
 	
 	settings.Add("startnewgame", true, "Start on New Game");
-	settings.SetToolTip("startnewgame", "Start on New Game select - use timer offset xxxx (TBD)");
+	settings.SetToolTip("startnewgame", "Start on New Game select - use timer offset 0.66");
 	
-	settings.Add("viraltulips", true, "Kill 4 Viral Tulips", "startnewgame");
-	settings.SetToolTip("viraltulips", "Requires a special variable, so only usable if splitter is started automatically.");
+	settings.Add("killenemies", true, "Kill Enemies", "startnewgame");
+	settings.SetToolTip("killenemies", "These require special variables, so only usable if splitter is started automatically.");
+	
+	settings.Add("viraltulips", true, "Kill 4 Viral Tulips", "killenemies");
+	settings.Add("metalshell", true, "Kill 1 Metal Shell (storyline enemy, first Disc materials)", "killenemies");
+	settings.Add("dosdeath", true, "Deity Of Sin Arfoire (Normal)", "killenemies");
+	settings.SetToolTip("dosdeath", "End Split, times on last boss hit.");
+	settings.Add("dosdeathcq", true, "Deity Of Sin Arfoire (Conquest)", "killenemies");
+	settings.SetToolTip("dosdeathcq", "End Split, times on last boss hit.");
+	settings.Add("dosdeathholy", false, "Deity Of Sin Arfoire (Holy Sword)", "killenemies");
+	settings.SetToolTip("dosdeathholy", "End Split, times on last boss hit of second form.");
+	settings.Add("truedeath", false, "True Arfoire (True Ending)", "killenemies");
+	settings.SetToolTip("truedeath", "End Split, times on last boss hit of second form.");
+	
 	
 	settings.Add("spiderwebs", true, "Acquire 2 Spider Webs", "startnewgame");
 	settings.SetToolTip("spiderwebs", "Requires a special variable, so only usable if splitter is started automatically.");
@@ -52,21 +64,6 @@ startup
 	settings.Add("graveyardAE", false, "Gamindustri Graveyard Add Enemies Materials", "holytrueitems");
 	settings.Add("sag", false, "Symbol Attack Gains Plan", "holytrueitems");
 	settings.Add("woodshell", false, "Wood Shell", "holytrueitems");
-	
-	settings.Add("enemydeath", true, "Split on specific enemy deaths");
-	
-	settings.Add("dosdeath", true, "Deity Of Sin Arfoire (Normal/Conquest)", "enemydeath");
-	settings.SetToolTip("dosdeath", "End Split, times on last boss hit.");
-	
-	settings.Add("dosdeathholy", false, "Deity Of Sin Arfoire (Holy Sword)", "enemydeath");
-	settings.SetToolTip("dosdeathholy", "End Split, times on last boss hit after first form killed already.");
-	
-	settings.Add("truedeath", false, "True Arfoire (True Ending)", "enemydeath");
-	settings.SetToolTip("truedeath", "End Split, times on last boss hit after first form killed already.");
-	
-	settings.Add("metalshelldeath", true, "Metal Shell", "enemydeath");
-	settings.SetToolTip("metalshelldeath", "Lowee Gathering Mission (never killed anywhere else under normal circumstances)");
-	
 	
 	settings.Add("slowrefreshonitems", false, "Slow Refresh Rate w/ Items");
 	settings.SetToolTip("slowrefreshonitems", "Slow down the refresh rate while inventory-related splits are being tested to reduce CPU usage.");
@@ -217,7 +214,20 @@ init
 	print("Game found!");
 	print("module size: " + modules.First().ModuleMemorySize);
 	
+	vars.slowRefresh = false;
+	refreshRate = 60;
+	vars.itemSplitsHit = 0;
+	vars.itemSplitsActive = 0;
+	vars.enemySplitsHit = 0;
+	vars.enemySplitsActive = 0;
+	
 	vars.tulipsSplit = false;
+	vars.shellSplit = false;
+	vars.arfSplitNormal = false;
+	vars.arfSplitConquest = false;
+	vars.arfSplitHoly = false;
+	vars.arfSplitTrue = false;
+	
 	vars.websSplit = false;
 	vars.d60Mats = false;
 	vars.colosseum = false;
@@ -228,17 +238,13 @@ init
 	vars.graveyardAE = false;
 	vars.sag = false;
 	vars.woodshell = false;
-	vars.itemSplitsHit = 0;
-	vars.itemSplitsActive = 0;
-	vars.armHolyEndSplit = false;
-	vars.armTrueEndSplit = false;
-	vars.slowRefresh = false;
+	
 	vars.leanboxSharesSplit = false;
 	vars.loweeSharesSplit = false;
 	vars.lastationSharesSplit = false;
 	vars.planeptuneSharesSplit = false;
 	vars.allSharesSplit = false;
-	refreshRate = 60;
+	
 	
 	if (modules.First().ModuleMemorySize == 10620928) {
 		print("Found and confirmed GoG Version");
@@ -253,42 +259,6 @@ init
 }
 split
 {
-	if (settings["enemydeath"]) {
-		//print("Last enemy defending: " + current.LDN_Enemy + " with " + current.LDHP_Enemy + "HP");
-		if (settings["dosdeath"] && ((old.LDN_Enemy != null && current.LDN_Enemy != null) && (current.LDN_Enemy.Equals("Deity Of Sin Arfoire")) && (old.LDN_Enemy.Equals(current.LDN_Enemy)) && (old.LDHP_Enemy > 0 && current.LDHP_Enemy == 0)))
-		{
-			print("Enemy " + current.LDN_Enemy + " Died! Splitting!");
-			return true;
-		}
-		if (settings["dosdeathholy"] && vars.armHolyEndSplit && ((old.LDN_Enemy != null && current.LDN_Enemy != null) && (current.LDN_Enemy.Equals("Deity Of Sin Arfoire")) && (old.LDN_Enemy.Equals(current.LDN_Enemy)) && (old.LDHP_Enemy > 0 && current.LDHP_Enemy == 0)))
-		{
-			print("Enemy " + current.LDN_Enemy + " Died! Splitting!");
-			return true;
-		}
-		if (settings["truedeath"] && vars.armTrueEndSplit && ((old.LDN_Enemy != null && current.LDN_Enemy != null) && (current.LDN_Enemy.Equals("True Arfoire")) && (old.LDN_Enemy.Equals(current.LDN_Enemy)) && (old.LDHP_Enemy > 0 && current.LDHP_Enemy == 0)))
-		{
-			print("Enemy " + current.LDN_Enemy + " Died! Splitting!");
-			return true;
-		}
-		if (settings["metalshelldeath"] && ((old.LDN_Enemy != null && current.LDN_Enemy != null) && (current.LDN_Enemy.Equals("Metal Shell")) && (old.LDN_Enemy.Equals(current.LDN_Enemy)) && (old.LDHP_Enemy > 0 && current.LDHP_Enemy == 0)))
-		{
-			print("Enemy " + current.LDN_Enemy + " Died! Splitting!");
-			return true;
-		}
-		try {
-			if(settings["dosdeathholy"] && !vars.armHolyEndSplit && current.Cutscene.Equals("Apocalypse - Gleam of the Holy Sword")) {
-				vars.armHolyEndSplit = true;
-				print("Reached cutscene between Holy Sword DoS Arfoire forms, arming final split.");
-			}
-			if(settings["truedeath"] && !vars.armTrueEndSplit && current.Cutscene.Equals("Final - Nepgear VS. True Arfoire")) {
-				vars.armTrueEndSplit = true;
-				print("Reached cutscene between True Arfoire forms, arming final split.");
-			}
-		}
-		catch {}
-	}
-	
-	
 	// split for cutscene
 	if (settings["cutscenes"])
 	{
@@ -331,20 +301,47 @@ split
 		}
 	}
 	
-	// split for Viral Tulips
-	if(settings["startnewgame"] && settings["viraltulips"] && !vars.tulipsSplit) {
+	// split for enemy kills
+	if(settings["killenemies"] && vars.enemySplitsHit < vars.enemySplitsActive) {
 		byte[] enemyBook = memory.ReadBytes((System.IntPtr) (current.SaveBlock + 0x783F8), (int) (current.EnemyBookSize*8));
 		for(int i = 0; i < current.EnemyBookSize; i++) {
 			short enemyID = BitConverter.ToInt16(enemyBook, i*8);
-			if(enemyID == 1003) {
-				short kills = BitConverter.ToInt16(enemyBook, i*8 + 4);
-				if(kills >= 4) {
-					// do split
-					vars.tulipsSplit = true;
-					print("Split for viral Tulips");
-					return true;
-				}
-				break;
+			short kills = BitConverter.ToInt16(enemyBook, i*8 + 4);
+			if(settings["viraltulips"] && !vars.tulipsSplit && enemyID == 1003 && kills >= 4) {
+				vars.tulipsSplit = true;
+				vars.enemySplitsHit++;
+				print("Split for viral Tulips");
+				return true;
+			}
+			else if(settings["metalshell"] && !vars.shellSplit && enemyID == 1018 && kills > 0) {
+				vars.shellSplit = true;
+				vars.enemySplitsHit++;
+				print("Split for Metal Shell");
+				return true;
+			}
+			else if(settings["dosdeath"] && !vars.arfSplitNormal && enemyID == 1039 && kills > 0) {
+				vars.arfSplitNormal = true;
+				vars.enemySplitsHit++;
+				print("Split for Normal Ending DoS Arfoire");
+				return true;
+			}
+			else if(settings["dosdeathcq"] && !vars.arfSplitConquest && enemyID == 1055 && kills > 0) {
+				vars.arfSplitConquest = true;
+				vars.enemySplitsHit++;
+				print("Split for Conquest Ending DoS Arfoire");
+				return true;
+			}
+			else if(settings["dosdeathholy"] && !vars.arfSplitHoly && enemyID == 1062 && kills > 0) {
+				vars.arfSplitHoly = true;
+				vars.enemySplitsHit++;
+				print("Split for Holy Sword Ending DoS Arfoire second phase");
+				return true;
+			}
+			else if(settings["truedeath"] && !vars.arfSplitTrue && enemyID == 1047 && kills > 0) {
+				vars.arfSplitTrue = true;
+				vars.enemySplitsHit++;
+				print("Split for True Ending True Arfoire second phase");
+				return true;
 			}
 		}
 	}
@@ -453,7 +450,20 @@ start
 	
 	if (settings["startnewgame"] && (current.Cutscene != null && current.Cutscene.Equals("New Game")))
 	{
+		vars.slowRefresh = false;
+		refreshRate = 60;
+		vars.itemSplitsHit = 0;
+		vars.itemSplitsActive = 0;
+		vars.enemySplitsHit = 0;
+		vars.enemySplitsActive = 0;
+		
 		vars.tulipsSplit = false;
+		vars.shellSplit = false;
+		vars.arfSplitNormal = false;
+		vars.arfSplitConquest = false;
+		vars.arfSplitHoly = false;
+		vars.arfSplitTrue = false;
+		
 		vars.websSplit = false;
 		vars.d60Mats = false;
 		vars.colosseum = false;
@@ -464,17 +474,12 @@ start
 		vars.graveyardAE = false;
 		vars.sag = false;
 		vars.woodshell = false;
-		vars.itemSplitsHit = 0;
-		vars.itemSplitsActive = 0;
-		vars.armHolyEndSplit = false;
-		vars.armTrueEndSplit = false;
-		vars.slowRefresh = false;
+		
 		vars.leanboxSharesSplit = false;
 		vars.loweeSharesSplit = false;
 		vars.lastationSharesSplit = false;
 		vars.planeptuneSharesSplit = false;
 		vars.allSharesSplit = false;
-		refreshRate = 60;
 		
 		// count item splits
 		vars.itemSplitsActive += settings["spiderwebs"] ? 1 : 0;
@@ -486,6 +491,14 @@ start
 		vars.itemSplitsActive += settings["lgeCD"] ? 1 : 0;
 		vars.itemSplitsActive += settings["graveyardAE"] ? 1 : 0;
 		vars.itemSplitsActive += settings["woodshell"] ? 1 : 0;
+		
+		// count enemy splits
+		vars.enemySplitsActive += settings["viraltulips"] ? 1 : 0;
+		vars.enemySplitsActive += settings["metalshell"] ? 1 : 0;
+		vars.enemySplitsActive += settings["dosdeath"] ? 1 : 0;
+		vars.enemySplitsActive += settings["dosdeathcq"] ? 1 : 0;
+		vars.enemySplitsActive += settings["dosdeathholy"] ? 1 : 0;
+		vars.enemySplitsActive += settings["truedeath"] ? 1 : 0;
 		return true;
 	}
 	
