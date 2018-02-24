@@ -55,15 +55,15 @@ startup
 	settings.Add("colosseum", true, "Get colosseum", "startnewgame");
 	settings.SetToolTip("colosseum", "Requires a special variable, so only usable if splitter is started automatically.");
 	
-	settings.Add("holytrueitems", true, "Holy Sword/True Ending Item Splits", "startnewgame");
+	settings.Add("sagitems", true, "Symbol Attack Gains Item Splits", "startnewgame");
 	
-	settings.Add("rebeatAE", false, "Rebeat Resort Add Enemies Materials", "holytrueitems");
-	settings.Add("midcompanyAE", false, "Midcompany Add Enemies Materials", "holytrueitems");
-	settings.Add("midcompanyCD", false, "Midcompany Change Dungeon Materials", "holytrueitems");
-	settings.Add("lgeCD", false, "Lowee Global Expo Change Dungeon Materials", "holytrueitems");
-	settings.Add("graveyardAE", false, "Gamindustri Graveyard Add Enemies Materials", "holytrueitems");
-	settings.Add("sag", false, "Symbol Attack Gains Plan", "holytrueitems");
-	settings.Add("woodshell", false, "Wood Shell", "holytrueitems");
+	settings.Add("rebeatAE", false, "Rebeat Resort Add Enemies Materials", "sagitems");
+	settings.Add("midcompanyAE", false, "Midcompany Add Enemies Materials", "sagitems");
+	settings.Add("midcompanyCD", false, "Midcompany Change Dungeon Materials", "sagitems");
+	settings.Add("lgeCD", false, "Lowee Global Expo Change Dungeon Materials", "sagitems");
+	settings.Add("graveyardAE", false, "Gamindustri Graveyard Add Enemies Materials", "sagitems");
+	settings.Add("sag", false, "Symbol Attack Gains Plan", "sagitems");
+	settings.Add("woodshell", false, "Wood Shell", "sagitems");
 	
 	settings.Add("slowrefreshonitems", false, "Slow Refresh Rate w/ Items");
 	settings.SetToolTip("slowrefreshonitems", "Slow down the refresh rate while inventory-related splits are being tested to reduce CPU usage.");
@@ -203,8 +203,17 @@ startup
 	settings.Add("Apocalypse - Gamindustri's Hope", false, "Kill CFW Magic", "hsq");
 	settings.Add("Apocalypse - Gleam of the Holy Sword", false, "Kill First Phase DoS Arfoire", "hsq");
 	
+	// True End
+	settings.Add("trueq", true, "True End", "cutscenes");
 	
-	
+	settings.Add("Ch. 6 - Vessel Destroyed", false, "Defeat Normal End final boss and enter True End path", "trueq");
+	settings.Add("Ch. 7 - Bond of Beliefs", false, "Kill resurrected Brave", "trueq");
+	settings.Add("Ch. 7 - CFW Judge Destroyed", false, "Kill resurrected Judge", "trueq");
+	settings.Add("Ch. 7 - Nightmare's End", false, "Kill resurrected Trick", "trueq");
+	settings.Add("Ch. 7 - Battle of Fate", false, "Kill resurrected Magic", "trueq");
+	settings.Add("Final - All-Time Losers", false, "Defeat the All-Time Losers (Underling & Warechu)", "trueq");
+	settings.Add("Final - Nepgear VS. True Arfoire", false, "Defeat first phase of True Arfoire", "trueq");
+
 	print("Startup complete! CREDITS: Marenthyu <marenthyu@marenthyu.de>, Dabomstew");
 	
 }
