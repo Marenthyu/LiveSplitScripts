@@ -1,15 +1,15 @@
 state("NeptuniaRebirth2", "Steam")
 {
-	int SaveBlock : 0x42C0B0;
-	string64 Cutscene : 0x42C0B0, 0xEEC;
-	int EnemyBookSize : 0x42C0B0, 0x783F4;
-	int InventorySize : 0x42C0B0, 0xCA4C;
-	byte PlaneptuneShares : 0x42C0B0, 0xF1C;
-	byte LeanboxShares : 0x42C0B0, 0xF20;
-	byte LastationShares : 0x42C0B0, 0xF24;
-	byte LoweeShares : 0x42C0B0, 0xF28;
-	int LDHP_Enemy : 0x43A1F0, 0xC, 0xA0, 0x40;
-	int LDN_Enemy : 0x43A1F0, 0xC, 0xA0, 0x8;
+	int SaveBlock : 0x429060;
+	string64 Cutscene : 0x429060, 0xEEC;
+	int EnemyBookSize : 0x429060, 0x783F4;
+	int InventorySize : 0x429060, 0xCA4C;
+	byte PlaneptuneShares : 0x429060, 0xF1C;
+	byte LeanboxShares : 0x429060, 0xF20;
+	byte LastationShares : 0x429060, 0xF24;
+	byte LoweeShares : 0x429060, 0xF28;
+	int LDHP_Enemy : 0x4371A0, 0xC, 0xA0, 0x40;
+	int LDN_Enemy : 0x4371A0, 0xC, 0xA0, 0x8;
 }
 state("NeptuniaRebirth2", "GoG")
 {
@@ -239,8 +239,8 @@ init
 		version = "GoG";
 		vars.gameConnected = true;
 	}
-	else if (modules.First().ModuleMemorySize == 10649600) {
-		print("Found and confirmed Steam Version");
+	else if (modules.First().ModuleMemorySize == 10637312) {
+		print("Found and confirmed Steam Version 05.18.2018 Patch");
 		version = "Steam";
 		vars.gameConnected = true;
 	}
