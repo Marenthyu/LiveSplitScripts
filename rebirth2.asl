@@ -1,15 +1,15 @@
 state("NeptuniaRebirth2", "Steam")
 {
-	int SaveBlock : 0x42C0B0;
-	string64 Cutscene : 0x42C0B0, 0xEEC;
-	int EnemyBookSize : 0x42C0B0, 0x783F4;
-	int InventorySize : 0x42C0B0, 0xCA4C;
-	byte PlaneptuneShares : 0x42C0B0, 0xF1C;
-	byte LeanboxShares : 0x42C0B0, 0xF20;
-	byte LastationShares : 0x42C0B0, 0xF24;
-	byte LoweeShares : 0x42C0B0, 0xF28;
-	int LDHP_Enemy : 0x43A1F0, 0xC, 0xA0, 0x40;
-	int LDN_Enemy : 0x43A1F0, 0xC, 0xA0, 0x8;
+	int SaveBlock : 0x429060;
+	string64 Cutscene : 0x429060, 0xEEC;
+	int EnemyBookSize : 0x429060, 0x783F4;
+	int InventorySize : 0x429060, 0xCA4C;
+	byte PlaneptuneShares : 0x429060, 0xF1C;
+	byte LeanboxShares : 0x429060, 0xF20;
+	byte LastationShares : 0x429060, 0xF24;
+	byte LoweeShares : 0x429060, 0xF28;
+	int LDHP_Enemy : 0x4371A0, 0xC, 0xA0, 0x40;
+	int LDN_Enemy : 0x4371A0, 0xC, 0xA0, 0x8;
 }
 state("NeptuniaRebirth2", "GoG")
 {
@@ -31,10 +31,8 @@ startup
 	settings.Add("startnewgame", true, "Start on New Game");
 	settings.SetToolTip("startnewgame", "Start on New Game select - use timer offset 0.66");
 	
-	settings.Add("startngplus", false, "Start on New Game Plus");
-	settings.SetToolTip("startngplus", "Start on New Game Plus file load - use timer offset 3.83");
-	
-	settings.Add("killenemies", true, "Kill Enemies");
+	settings.Add("killenemies", true, "Kill Enemies", "startnewgame");
+	settings.SetToolTip("killenemies", "These require special variables, so only usable if splitter is started automatically.");
 	
 	settings.Add("viraltulips", true, "Kill 4 Viral Tulips", "killenemies");
 	settings.Add("metalshell", true, "Kill 1 Metal Shell (storyline enemy, first Disc materials)", "killenemies");
@@ -47,14 +45,17 @@ startup
 	settings.Add("truedeath", false, "True Arfoire (True Ending)", "killenemies");
 	settings.SetToolTip("truedeath", "End Split, times on last boss hit of second form.");
 	
-	settings.Add("items", true, "Split when acquiring certain items");
 	
+	settings.Add("spiderwebs", true, "Acquire 2 Spider Webs", "startnewgame");
+	settings.SetToolTip("spiderwebs", "Requires a special variable, so only usable if splitter is started automatically.");
 	
-	settings.Add("spiderwebs", true, "Acquire 2 Spider Webs", "items");
-	settings.Add("d60Mats", true, "Get Darkness 60 Materials", "items");
-	settings.Add("colosseum", true, "Get colosseum", "items");
+	settings.Add("d60Mats", true, "Get Darkness 60 Materials", "startnewgame");
+	settings.SetToolTip("d60Mats", "Requires a special variable, so only usable if splitter is started automatically.");
 	
-	settings.Add("sagitems", true, "Symbol Attack Gains Item Splits", "items");
+	settings.Add("colosseum", true, "Get colosseum", "startnewgame");
+	settings.SetToolTip("colosseum", "Requires a special variable, so only usable if splitter is started automatically.");
+	
+	settings.Add("sagitems", true, "Symbol Attack Gains Item Splits", "startnewgame");
 	
 	settings.Add("rebeatAE", false, "Rebeat Resort Add Enemies Materials", "sagitems");
 	settings.Add("midcompanyAE", false, "Midcompany Add Enemies Materials", "sagitems");
@@ -212,21 +213,9 @@ startup
 	settings.Add("Ch. 7 - Battle of Fate", false, "Kill resurrected Magic", "trueq");
 	settings.Add("Final - All-Time Losers", false, "Defeat the All-Time Losers (Underling & Warechu)", "trueq");
 	settings.Add("Final - Nepgear VS. True Arfoire", false, "Defeat first phase of True Arfoire", "trueq");
-	
-	vars.gameConnected = false;
-	vars.timerJustStarted = false;
-	vars.timer_OnStart = (EventHandler)((s, e) =>
-	{
-		vars.timerJustStarted = true;
-	});
-	timer.OnStart += vars.timer_OnStart;
-	
+
 	print("Startup complete! CREDITS: Marenthyu <marenthyu@marenthyu.de>, Dabomstew");
 	
-}
-shutdown
-{
-	timer.OnStart -= vars.timer_OnStart;
 }
 init
 {
@@ -234,98 +223,51 @@ init
 	print("Game found!");
 	print("module size: " + modules.First().ModuleMemorySize);
 	
+	vars.slowRefresh = false;
+	refreshRate = 60;
+	vars.itemSplitsHit = 0;
+	vars.itemSplitsActive = 0;
+	vars.enemySplitsHit = 0;
+	vars.enemySplitsActive = 0;
+	
+	vars.tulipsSplit = false;
+	vars.shellSplit = false;
+	vars.arfSplitNormal = false;
+	vars.arfSplitConquest = false;
+	vars.arfSplitHoly = false;
+	vars.arfSplitTrue = false;
+	
+	vars.websSplit = false;
+	vars.d60Mats = false;
+	vars.colosseum = false;
+	vars.rebeatAE = false;
+	vars.midcompanyAE = false;
+	vars.midcompanyCD = false;
+	vars.lgeCD = false;
+	vars.graveyardAE = false;
+	vars.sag = false;
+	vars.woodshell = false;
+	
+	vars.leanboxSharesSplit = false;
+	vars.loweeSharesSplit = false;
+	vars.lastationSharesSplit = false;
+	vars.planeptuneSharesSplit = false;
+	vars.allSharesSplit = false;
+	
+	
 	if (modules.First().ModuleMemorySize == 10620928) {
 		print("Found and confirmed GoG Version");
 		version = "GoG";
-		vars.gameConnected = true;
 	}
-	else if (modules.First().ModuleMemorySize == 10649600) {
-		print("Found and confirmed Steam Version");
+    else if (modules.First().ModuleMemorySize == 10637312) {
+		print("Found and confirmed Steam Version Latest Patch");
 		version = "Steam";
-		vars.gameConnected = true;
 	}
-	else {
-		print("Unrecognized game version. Disabling functionality.");
-		vars.gameConnected = false;
-	}
-}
-exit
-{
-	vars.gameConnected = false;
-}
-update
-{
-	if(!vars.gameConnected)
-	{
-		return false;
-	}
-	
-	if(vars.timerJustStarted) {
-		vars.slowRefresh = false;
-		refreshRate = 60;
-		vars.itemSplitsHit = 0;
-		vars.itemSplitsActive = 0;
-		vars.enemySplitsHit = 0;
-		vars.enemySplitsActive = 0;
-		
-		vars.tulipsSplit = false;
-		vars.shellSplit = false;
-		vars.arfSplitNormal = false;
-		vars.arfSplitConquest = false;
-		vars.arfSplitHoly = false;
-		vars.arfSplitTrue = false;
-		
-		vars.websSplit = false;
-		vars.d60Mats = false;
-		vars.colosseum = false;
-		vars.rebeatAE = false;
-		vars.midcompanyAE = false;
-		vars.midcompanyCD = false;
-		vars.lgeCD = false;
-		vars.graveyardAE = false;
-		vars.sag = false;
-		vars.woodshell = false;
-		
-		vars.leanboxSharesSplit = false;
-		vars.loweeSharesSplit = false;
-		vars.lastationSharesSplit = false;
-		vars.planeptuneSharesSplit = false;
-		vars.allSharesSplit = false;
-		
-		// count item splits
-		vars.itemSplitsActive += settings["spiderwebs"] ? 1 : 0;
-		vars.itemSplitsActive += settings["d60Mats"] ? 1 : 0;
-		vars.itemSplitsActive += settings["colosseum"] ? 1 : 0;
-		vars.itemSplitsActive += settings["rebeatAE"] ? 1 : 0;
-		vars.itemSplitsActive += settings["midcompanyAE"] ? 1 : 0;
-		vars.itemSplitsActive += settings["midcompanyCD"] ? 1 : 0;
-		vars.itemSplitsActive += settings["lgeCD"] ? 1 : 0;
-		vars.itemSplitsActive += settings["graveyardAE"] ? 1 : 0;
-		vars.itemSplitsActive += settings["woodshell"] ? 1 : 0;
-		
-		// count enemy splits
-		vars.enemySplitsActive += settings["viraltulips"] ? 1 : 0;
-		vars.enemySplitsActive += settings["metalshell"] ? 1 : 0;
-		vars.enemySplitsActive += settings["dosdeath"] ? 1 : 0;
-		vars.enemySplitsActive += settings["dosdeathcq"] ? 1 : 0;
-		vars.enemySplitsActive += settings["dosdeathholy"] ? 1 : 0;
-		vars.enemySplitsActive += settings["truedeath"] ? 1 : 0;
-		
-		// read initial kill values
-		vars.initialKills = new short[5009]; // highest enemy id is 5008
-		byte[] enemyBook = memory.ReadBytes((System.IntPtr) (current.SaveBlock + 0x783F8), (int) (current.EnemyBookSize*8));
-		for(int i = 0; i < current.EnemyBookSize; i++) {
-			vars.initialKills[BitConverter.ToInt16(enemyBook, i*8)] = BitConverter.ToInt16(enemyBook, i*8 + 4);
-		}
-		vars.timerJustStarted = false;
-	}
+
+
 }
 split
 {
-	if(vars.timerJustStarted) {
-		// edge case, don't try anything this cycle
-		return false;
-	}
 	// split for cutscene
 	if (settings["cutscenes"])
 	{
@@ -369,11 +311,11 @@ split
 	}
 	
 	// split for enemy kills
-	if(vars.enemySplitsHit < vars.enemySplitsActive) {
+	if(settings["killenemies"] && vars.enemySplitsHit < vars.enemySplitsActive) {
 		byte[] enemyBook = memory.ReadBytes((System.IntPtr) (current.SaveBlock + 0x783F8), (int) (current.EnemyBookSize*8));
 		for(int i = 0; i < current.EnemyBookSize; i++) {
 			short enemyID = BitConverter.ToInt16(enemyBook, i*8);
-			int kills = BitConverter.ToInt16(enemyBook, i*8 + 4) - vars.initialKills[enemyID];
+			short kills = BitConverter.ToInt16(enemyBook, i*8 + 4);
 			if(settings["viraltulips"] && !vars.tulipsSplit && enemyID == 1003 && kills >= 4) {
 				vars.tulipsSplit = true;
 				vars.enemySplitsHit++;
@@ -415,7 +357,7 @@ split
 	
 	// Acquire Items
 
-	if(vars.itemSplitsHit < vars.itemSplitsActive) {
+	if(settings["startnewgame"] && vars.itemSplitsHit < vars.itemSplitsActive) {
 		if(settings["slowrefreshonitems"] && !vars.slowRefresh) {
 			refreshRate = 20;
 			vars.slowRefresh = true;
@@ -514,12 +456,59 @@ split
 start
 {
 	// New Game
+	
 	if (settings["startnewgame"] && (current.Cutscene != null && current.Cutscene.Equals("New Game")))
 	{
+		vars.slowRefresh = false;
+		refreshRate = 60;
+		vars.itemSplitsHit = 0;
+		vars.itemSplitsActive = 0;
+		vars.enemySplitsHit = 0;
+		vars.enemySplitsActive = 0;
+		
+		vars.tulipsSplit = false;
+		vars.shellSplit = false;
+		vars.arfSplitNormal = false;
+		vars.arfSplitConquest = false;
+		vars.arfSplitHoly = false;
+		vars.arfSplitTrue = false;
+		
+		vars.websSplit = false;
+		vars.d60Mats = false;
+		vars.colosseum = false;
+		vars.rebeatAE = false;
+		vars.midcompanyAE = false;
+		vars.midcompanyCD = false;
+		vars.lgeCD = false;
+		vars.graveyardAE = false;
+		vars.sag = false;
+		vars.woodshell = false;
+		
+		vars.leanboxSharesSplit = false;
+		vars.loweeSharesSplit = false;
+		vars.lastationSharesSplit = false;
+		vars.planeptuneSharesSplit = false;
+		vars.allSharesSplit = false;
+		
+		// count item splits
+		vars.itemSplitsActive += settings["spiderwebs"] ? 1 : 0;
+		vars.itemSplitsActive += settings["d60Mats"] ? 1 : 0;
+		vars.itemSplitsActive += settings["colosseum"] ? 1 : 0;
+		vars.itemSplitsActive += settings["rebeatAE"] ? 1 : 0;
+		vars.itemSplitsActive += settings["midcompanyAE"] ? 1 : 0;
+		vars.itemSplitsActive += settings["midcompanyCD"] ? 1 : 0;
+		vars.itemSplitsActive += settings["lgeCD"] ? 1 : 0;
+		vars.itemSplitsActive += settings["graveyardAE"] ? 1 : 0;
+		vars.itemSplitsActive += settings["woodshell"] ? 1 : 0;
+		
+		// count enemy splits
+		vars.enemySplitsActive += settings["viraltulips"] ? 1 : 0;
+		vars.enemySplitsActive += settings["metalshell"] ? 1 : 0;
+		vars.enemySplitsActive += settings["dosdeath"] ? 1 : 0;
+		vars.enemySplitsActive += settings["dosdeathcq"] ? 1 : 0;
+		vars.enemySplitsActive += settings["dosdeathholy"] ? 1 : 0;
+		vars.enemySplitsActive += settings["truedeath"] ? 1 : 0;
 		return true;
 	}
-	if (settings["startngplus"] && (current.Cutscene != null && current.Cutscene.Equals("Prelude to the End")))
-	{
-		return true;
-	}
+	
 }
