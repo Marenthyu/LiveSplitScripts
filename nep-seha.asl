@@ -1,17 +1,17 @@
-state("Neptune VSSega Hard Girls")
+state("Neptune VSSega Hard Girls", "SteamCurrent")
 {
-	int LDHP_Enemy : 0x445428, 0xC, 0xB8, 0x4c;
-	string10 LDN_Enemy : 0x445428, 0xC, 0xB8, 0xE;
-	int Savefile : 0x91CF0C;
-	int CurrentQuest : 0x437c30, 0xD2670;
-	int CompletedQuests : 0x437C30, 0x13D38;
-	int BattlesStarted : 0x437C30, 0xE3C;
-	int EnemiesKilled : 0x437C30, 0xE40;
-	short Firstslot : 0x437C30, 0x10E34;
-	short Secondslot : 0x437C30, 0x10E36;
-	short Thirdslot : 0x437C30, 0x10E38;
-	short Fourthslot : 0x437C30, 0x10E3A;
-	string32 Cutscene : 0x437C30, 0xf6c;
+	int LDHP_Enemy : 0x4453C8, 0xC, 0xB8, 0x4c;
+	string10 LDN_Enemy : 0x4453C8, 0xC, 0xB8, 0xE;
+	int Savefile : 0x8DCE94;
+	int CurrentQuest : 0x437BD0, 0xD2670;
+	int CompletedQuests : 0x437BD0, 0x13D38;
+	int BattlesStarted : 0x437BD0, 0xE3C;
+	int EnemiesKilled : 0x437BD0, 0xE40;
+	short Firstslot : 0x437BD0, 0x10E34;
+	short Secondslot : 0x437BD0, 0x10E36;
+	short Thirdslot : 0x437BD0, 0x10E38;
+	short Fourthslot : 0x437BD0, 0x10E3A;
+	string32 Cutscene : 0x437BD0, 0xf6c;
 }
 startup
 {
@@ -338,16 +338,38 @@ startup
 	settings.SetToolTip("Game Gear Era" + vars.dot + "True End", "defeat TE Sprouts");
 	
 	print("Startup complete! CREDITS: Marenthyu <marenthyu@marenthyu.de>, Dabomstew");
+    
+    vars.gameConnected = false;
 	
 }
 init
 {
 
 	print("Game found!");
+    print("module size: " + modules.First().ModuleMemorySize);
+    
+    if (modules.First().ModuleMemorySize == 10551296) {
+		print("Found and confirmed Steam Version 05.22.2018 Patch");
+		version = "SteamCurrent";
+		vars.gameConnected = true;
+	}
+	else {
+		print("Unrecognized game version. Disabling functionality.");
+		vars.gameConnected = false;
+	}
 
+}
+exit
+{
+	vars.gameConnected = false;
 }
 split
 {
+    if(!vars.gameConnected)
+	{
+		return false;
+	}
+    
 	//print("Last enemy defending: " + current.LDN_Enemy + " with " + current.LDHP_Enemy + "HP");
 	if (settings["tedeath"] && ((current.CurrentQuest != 46) && (old.LDN_Enemy != null && current.LDN_Enemy != null) && (current.LDN_Enemy.Equals("Time Eater")) && (old.LDN_Enemy.Equals(current.LDN_Enemy)) && (old.LDHP_Enemy > 0 && current.LDHP_Enemy == 0)))
 	{
@@ -400,6 +422,11 @@ split
 }
 update
 {
+    if(!vars.gameConnected)
+	{
+		return false;
+	}
+    
 	if (settings["twobattlesdone"] && (vars.InitialBattles == -1 && !current.Cutscene.Equals(old.Cutscene)))
 	{
 		print("Initial Battles had not been initialized.");
@@ -410,6 +437,11 @@ update
 }
 start
 {
+    if(!vars.gameConnected)
+	{
+		return false;
+	}
+    
 	// New Game
 	if (settings["startnewgame"] && current.Cutscene.Equals("New Game"))
 	{
