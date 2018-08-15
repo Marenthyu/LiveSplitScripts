@@ -1,8 +1,6 @@
 state("Neptune VSSega Hard Girls", "SteamCurrent")
 {
-	int LDHP_Enemy : 0x4453C8, 0xC, 0xB8, 0x4c;
-	string10 LDN_Enemy : 0x4453C8, 0xC, 0xB8, 0xE;
-	int Savefile : 0x8DCE94;
+	int SaveBlock: 0x437BD0;
 	int CurrentQuest : 0x437BD0, 0xD2670;
 	int CompletedQuests : 0x437BD0, 0x13D38;
 	int BattlesStarted : 0x437BD0, 0xE3C;
@@ -12,6 +10,7 @@ state("Neptune VSSega Hard Girls", "SteamCurrent")
 	short Thirdslot : 0x437BD0, 0x10E38;
 	short Fourthslot : 0x437BD0, 0x10E3A;
 	string32 Cutscene : 0x437BD0, 0xf6c;
+	int EnemyBookSize : 0x437BD0, 0xC664C;
 }
 startup
 {
@@ -81,16 +80,15 @@ startup
 								// index 163
 								"Mega Drive's Ultimate Equipment", "Sega Saturn's Ultimate Equipment", "Game Gear's Ultimate Equipment", "Dreamcast's Ultimate Equipment"
 								};
+
+	settings.Add("startnewgame", true, "Start on New Game");
+	settings.SetToolTip("startnewgame", "Start on New Game select - use timer offset 0.33");
 	
-	settings.Add("tedeath", true, "Split on Time Eater Death");
-	
-	settings.Add("startnewgame", false, "Start on New Game (use 0.39 Timer start)");
-	
-	settings.Add("notfirstfile", true, "I am not using the first Savefile");
-	settings.Add("startonfile", true, "Start Timer upon loading a Savefile", "notfirstfile");
-	
-	settings.Add("twobattlesdone", false, "Split after killing 7 enemies in two fights after loading a file", "startonfile");
-	settings.SetToolTip("twobattlesdone", "Alternate Tutorial Dungeon Split, may not like saving/loading during a run.");
+	settings.Add("startngplus", true, "Start on New Game Plus");
+	settings.SetToolTip("startngplus", "Start on New Game Plus file load - use timer offset 0.05");
+
+	settings.Add("killenemies", true, "Kill Enemies");
+	settings.Add("tedeath", true, "Split on Time Eater Death", "killenemies");
 	
 	// Quest sections
 	settings.Add("quests", true, "Split with Quests");
@@ -99,98 +97,98 @@ startup
 	settings.Add("splitafterquestretire", false, "Split after a specific Quest has been retired", "quests");
 	settings.Add("splitafterquestaccept", false, "Split after a specific Quest has been accepted", "quests");
 	
-		settings.Add("questssaturn", true, "Saturn Era", "splitafterquestreport");
+	settings.Add("questssaturn", true, "Saturn Era", "splitafterquestreport");
+
+	settings.Add("questsmd", false, "Mega Drive Era", "splitafterquestreport");
+
+	settings.Add("questsgg", false, "Game Gear Era", "splitafterquestreport");
 	
-		settings.Add("questsmd", false, "Mega Drive Era", "splitafterquestreport");
+	settings.Add("questsdc", false, "Dreamcast Era", "splitafterquestreport");
 	
-		settings.Add("questsgg", false, "Game Gear Era", "splitafterquestreport");
-		
-		settings.Add("questsdc", false, "Dreamcast Era", "splitafterquestreport");
-		
-		settings.Add("questsmtr", false, "Macarasco Troll Ruin", "splitafterquestreport");
-		
-		settings.Add("queststp", false, "Toypolis", "splitafterquestreport");
-		
-		settings.Add("questsmb", false, "Medicine Bills", "splitafterquestreport");
-		
-		settings.Add("questsbr", false, "Broken Robot", "splitafterquestreport");
-		
-		settings.Add("questscp", false, "Cultivation Plan", "splitafterquestreport");
-		
-		settings.Add("questspudding", false, "Pudding", "splitafterquestreport");
-		
-		settings.Add("questsclr", false, "Class Level Release", "splitafterquestreport");
-		
-		settings.Add("questsss", false, "Skill Slots", "splitafterquestreport");
-		
-		settings.Add("questscu", false, "Class unlocks", "splitafterquestreport");
-		
-		settings.Add("questsug", false, "Ultimate Gear", "splitafterquestreport");
-		
-		settings.Add("questsother", false, "Other/Unknown", "splitafterquestreport");
-		
-		
-		
-		settings.Add("retirequestssaturn", false, "Saturn Era", "splitafterquestretire");
+	settings.Add("questsmtr", false, "Macarasco Troll Ruin", "splitafterquestreport");
 	
-		settings.Add("retirequestsmd", false, "Mega Drive Era", "splitafterquestretire");
+	settings.Add("queststp", false, "Toypolis", "splitafterquestreport");
 	
-		settings.Add("retirequestsgg", false, "Game Gear Era", "splitafterquestretire");
-		
-		settings.Add("retirequestsdc", false, "Dreamcast Era", "splitafterquestretire");
-		
-		settings.Add("retirequestsmtr", false, "Macarasco Troll Ruin", "splitafterquestretire");
-		
-		settings.Add("retirequeststp", false, "Toypolis", "splitafterquestretire");
-		
-		settings.Add("retirequestsmb", false, "Medicine Bills", "splitafterquestretire");
-		
-		settings.Add("retirequestsbr", false, "Broken Robot", "splitafterquestretire");
-		
-		settings.Add("retirequestscp", false, "Cultivation Plan", "splitafterquestretire");
-		
-		settings.Add("retirequestspudding", false, "Pudding", "splitafterquestretire");
-		
-		settings.Add("retirequestsclr", false, "Class Level Release", "splitafterquestretire");
-		
-		settings.Add("retirequestsss", false, "Skill Slots", "splitafterquestretire");
-		
-		settings.Add("retirequestscu", false, "Class unlocks", "splitafterquestretire");
-		
-		settings.Add("retirequestsug", false, "Ultimate Gear", "splitafterquestretire");
-		
-		settings.Add("retirequestsother", false, "Other/Unknown", "splitafterquestretire");
-		
-		
-		settings.Add("acceptquestssaturn", false, "Saturn Era", "splitafterquestaccept");
+	settings.Add("questsmb", false, "Medicine Bills", "splitafterquestreport");
 	
-		settings.Add("acceptquestsmd", false, "Mega Drive Era", "splitafterquestaccept");
+	settings.Add("questsbr", false, "Broken Robot", "splitafterquestreport");
 	
-		settings.Add("acceptquestsgg", false, "Game Gear Era", "splitafterquestaccept");
-		
-		settings.Add("acceptquestsdc", false, "Dreamcast Era", "splitafterquestaccept");
-		
-		settings.Add("acceptquestsmtr", false, "Macarasco Troll Ruin", "splitafterquestaccept");
-		
-		settings.Add("acceptqueststp", false, "Toypolis", "splitafterquestaccept");
-		
-		settings.Add("acceptquestsmb", false, "Medicine Bills", "splitafterquestaccept");
-		
-		settings.Add("acceptquestsbr", false, "Broken Robot", "splitafterquestaccept");
-		
-		settings.Add("acceptquestscp", false, "Cultivation Plan", "splitafterquestaccept");
-		
-		settings.Add("acceptquestspudding", false, "Pudding", "splitafterquestaccept");
-		
-		settings.Add("acceptquestsclr", false, "Class Level Release", "splitafterquestaccept");
-		
-		settings.Add("acceptquestsss", false, "Skill Slots", "splitafterquestaccept");
-		
-		settings.Add("acceptquestscu", false, "Class unlocks", "splitafterquestaccept");
-		
-		settings.Add("acceptquestsug", false, "Ultimate Gear", "splitafterquestaccept");
-		
-		settings.Add("acceptquestsother", false, "Other/Unknown", "splitafterquestaccept");
+	settings.Add("questscp", false, "Cultivation Plan", "splitafterquestreport");
+	
+	settings.Add("questspudding", false, "Pudding", "splitafterquestreport");
+	
+	settings.Add("questsclr", false, "Class Level Release", "splitafterquestreport");
+	
+	settings.Add("questsss", false, "Skill Slots", "splitafterquestreport");
+	
+	settings.Add("questscu", false, "Class unlocks", "splitafterquestreport");
+	
+	settings.Add("questsug", false, "Ultimate Gear", "splitafterquestreport");
+	
+	settings.Add("questsother", false, "Other/Unknown", "splitafterquestreport");
+	
+	
+	
+	settings.Add("retirequestssaturn", false, "Saturn Era", "splitafterquestretire");
+
+	settings.Add("retirequestsmd", false, "Mega Drive Era", "splitafterquestretire");
+
+	settings.Add("retirequestsgg", false, "Game Gear Era", "splitafterquestretire");
+	
+	settings.Add("retirequestsdc", false, "Dreamcast Era", "splitafterquestretire");
+	
+	settings.Add("retirequestsmtr", false, "Macarasco Troll Ruin", "splitafterquestretire");
+	
+	settings.Add("retirequeststp", false, "Toypolis", "splitafterquestretire");
+	
+	settings.Add("retirequestsmb", false, "Medicine Bills", "splitafterquestretire");
+	
+	settings.Add("retirequestsbr", false, "Broken Robot", "splitafterquestretire");
+	
+	settings.Add("retirequestscp", false, "Cultivation Plan", "splitafterquestretire");
+	
+	settings.Add("retirequestspudding", false, "Pudding", "splitafterquestretire");
+	
+	settings.Add("retirequestsclr", false, "Class Level Release", "splitafterquestretire");
+	
+	settings.Add("retirequestsss", false, "Skill Slots", "splitafterquestretire");
+	
+	settings.Add("retirequestscu", false, "Class unlocks", "splitafterquestretire");
+	
+	settings.Add("retirequestsug", false, "Ultimate Gear", "splitafterquestretire");
+	
+	settings.Add("retirequestsother", false, "Other/Unknown", "splitafterquestretire");
+	
+	
+	settings.Add("acceptquestssaturn", false, "Saturn Era", "splitafterquestaccept");
+
+	settings.Add("acceptquestsmd", false, "Mega Drive Era", "splitafterquestaccept");
+
+	settings.Add("acceptquestsgg", false, "Game Gear Era", "splitafterquestaccept");
+	
+	settings.Add("acceptquestsdc", false, "Dreamcast Era", "splitafterquestaccept");
+	
+	settings.Add("acceptquestsmtr", false, "Macarasco Troll Ruin", "splitafterquestaccept");
+	
+	settings.Add("acceptqueststp", false, "Toypolis", "splitafterquestaccept");
+	
+	settings.Add("acceptquestsmb", false, "Medicine Bills", "splitafterquestaccept");
+	
+	settings.Add("acceptquestsbr", false, "Broken Robot", "splitafterquestaccept");
+	
+	settings.Add("acceptquestscp", false, "Cultivation Plan", "splitafterquestaccept");
+	
+	settings.Add("acceptquestspudding", false, "Pudding", "splitafterquestaccept");
+	
+	settings.Add("acceptquestsclr", false, "Class Level Release", "splitafterquestaccept");
+	
+	settings.Add("acceptquestsss", false, "Skill Slots", "splitafterquestaccept");
+	
+	settings.Add("acceptquestscu", false, "Class unlocks", "splitafterquestaccept");
+	
+	settings.Add("acceptquestsug", false, "Ultimate Gear", "splitafterquestaccept");
+	
+	settings.Add("acceptquestsother", false, "Other/Unknown", "splitafterquestaccept");
 		
 	
 
@@ -336,17 +334,38 @@ startup
 	
 	settings.Add("Game Gear Era" + vars.dot + "True End", false, "Game Gear Era・True End", "cutscenes");
 	settings.SetToolTip("Game Gear Era" + vars.dot + "True End", "defeat TE Sprouts");
+
+	vars.gameConnected = false;
+	vars.timerJustStarted = false;
+	vars.timerStartedSinceBoot = false;
+	vars.timer_OnStart = (EventHandler)((s, e) =>
+	{
+		vars.timerJustStarted = true;
+	});
+	timer.OnStart += vars.timer_OnStart;
+
+	// offsets that can't be in state
+	vars.enemyBookData = 0xC6650;
+	vars.splitsBeforeEndings = new [] { "Bad End?", "We Won... But...", "True Ending"+vars.dot+"Part 2"};
+	vars.endingNames = new[] { "Normal End", "True End", "Bad End"};
 	
 	print("Startup complete! CREDITS: Marenthyu <marenthyu@marenthyu.de>, Dabomstew");
-    
-    vars.gameConnected = false;
 	
+}
+shutdown
+{
+	try {
+	timer.OnStart -= vars.timer_OnStart;
+	} catch {}
+	vars.gameConnected = false;
+	vars.timerStartedSinceBoot = false;
 }
 init
 {
 
 	print("Game found!");
     print("module size: " + modules.First().ModuleMemorySize);
+	vars.timerStartedSinceBoot = false;
     
     if (modules.First().ModuleMemorySize == 10551296) {
 		print("Found and confirmed Steam Version 05.22.2018 Patch");
@@ -362,19 +381,40 @@ init
 exit
 {
 	vars.gameConnected = false;
+	vars.timerStartedSinceBoot = false;
 }
-split
+update
 {
-    if(!vars.gameConnected)
+	if(!vars.gameConnected)
 	{
 		return false;
 	}
-    
-	//print("Last enemy defending: " + current.LDN_Enemy + " with " + current.LDHP_Enemy + "HP");
-	if (settings["tedeath"] && ((current.CurrentQuest != 46) && (old.LDN_Enemy != null && current.LDN_Enemy != null) && (current.LDN_Enemy.Equals("Time Eater")) && (old.LDN_Enemy.Equals(current.LDN_Enemy)) && (old.LDHP_Enemy > 0 && current.LDHP_Enemy == 0)))
-	{
-		print("Enemy " + current.LDN_Enemy + " Died! Splitting! - Quest was " + current.CurrentQuest);
-		return true;
+	
+	if(vars.timerJustStarted) {
+		refreshRate = 60;
+		vars.enemySplitsHit = 0;
+		vars.enemySplitsActive = 0;
+		
+		vars.teSplit = false;
+		
+		// count enemy splits
+		vars.enemySplitsActive += settings["tedeath"] ? 1 : 0;
+		
+		// read initial kill values
+		vars.initialKills = new short[1023]; // highest enemy id is 1022
+		byte[] enemyBook = memory.ReadBytes((System.IntPtr) (current.SaveBlock + vars.enemyBookData), (int) (current.EnemyBookSize*8));
+		for(int i = 0; i < current.EnemyBookSize; i++) {
+			vars.initialKills[BitConverter.ToInt16(enemyBook, i*8)] = BitConverter.ToInt16(enemyBook, i*8 + 4);
+		}
+		vars.timerJustStarted = false;
+		vars.timerStartedSinceBoot = true;
+	}
+}
+split
+{
+    if(!vars.gameConnected || vars.timerJustStarted || !vars.timerStartedSinceBoot) {
+		// don't try anything if our vars state might be dirty
+		return false;
 	}
 	
 	// Current Quest changed
@@ -397,17 +437,6 @@ split
 			}
 		}
 	}
-	if (settings["notfirstfile"] && settings["startonfile"])
-	{
-		// split for second battle
-		if (settings["twobattlesdone"] && !vars.SplittedForBattles && (current.BattlesStarted - vars.InitialBattles == 2) && (current.EnemiesKilled - vars.InitialKilled == 7))
-		{
-			print("Second battle split");
-			vars.SplittedForBattles = true;
-			return true;
-		}
-		
-	}
 	
 	// split for cutscene
 	if (settings["cutscenes"])
@@ -419,20 +448,20 @@ split
 			}
 		} catch {}
 	}
-}
-update
-{
-    if(!vars.gameConnected)
-	{
-		return false;
-	}
-    
-	if (settings["twobattlesdone"] && (vars.InitialBattles == -1 && !current.Cutscene.Equals(old.Cutscene)))
-	{
-		print("Initial Battles had not been initialized.");
-		vars.InitialKilled = current.EnemiesKilled;
-		vars.InitialBattles = current.BattlesStarted;
-		print("Corrected to " + vars.InitialKilled + " enemies and " + vars.InitialBattles + " Battles.");
+
+	// split for enemy kills
+	if(vars.enemySplitsHit < vars.enemySplitsActive) {
+		byte[] enemyBook = memory.ReadBytes((System.IntPtr) (current.SaveBlock + vars.enemyBookData), (int) (current.EnemyBookSize*8));
+		for(int i = 0; i < current.EnemyBookSize; i++) {
+			short enemyID = BitConverter.ToInt16(enemyBook, i*8);
+			int kills = BitConverter.ToInt16(enemyBook, i*8 + 4) - vars.initialKills[enemyID];
+			if(settings["tedeath"] && !vars.teSplit && enemyID == 1019 && kills > 0) {
+				vars.teSplit = true;
+				vars.enemySplitsHit++;
+				print("Split for Time Eater Kill");
+				return true;
+			}
+		}
 	}
 }
 start
@@ -443,20 +472,14 @@ start
 	}
     
 	// New Game
-	if (settings["startnewgame"] && current.Cutscene.Equals("New Game"))
+	if (settings["startnewgame"] && (current.Cutscene != null && current.Cutscene.Equals("New Game")))
 	{
 		return true;
 	}
 
 	// File load
-	if ((settings["startnewgame"] && current.Cutscene.Equals("New Game")) || (settings["notfirstfile"] && settings["startonfile"] && old.Savefile == 0 && (current.Savefile > 0 && current.Savefile < 50)))
+	if (settings["startngplus"] && current.Cutscene != null && !current.Cutscene.Equals(old.Cutscene) && Array.IndexOf(vars.splitsBeforeEndings, old.Cutscene) == -1 && Array.IndexOf(vars.endingNames, current.Cutscene.ToString()) > -1)
 	{
-			if (settings["twobattlesdone"])
-			{
-				vars.InitialBattles = -1;
-				vars.SplittedForBattles = false;
-				vars.InitialKilled = -1;
-			}
-			return true;
+		return true;
 	}
 }
