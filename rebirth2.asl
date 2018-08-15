@@ -8,8 +8,6 @@ state("NeptuniaRebirth2", "Steam")
 	byte LeanboxShares : 0x429060, 0xF20;
 	byte LastationShares : 0x429060, 0xF24;
 	byte LoweeShares : 0x429060, 0xF28;
-	int LDHP_Enemy : 0x4371A0, 0xC, 0xA0, 0x40;
-	int LDN_Enemy : 0x4371A0, 0xC, 0xA0, 0x8;
 }
 state("NeptuniaRebirth2", "GoG")
 {
@@ -21,18 +19,16 @@ state("NeptuniaRebirth2", "GoG")
 	byte LeanboxShares : 0x424F60, 0xF20;
 	byte LastationShares : 0x424F60, 0xF24;
 	byte LoweeShares : 0x424F60, 0xF28;
-	int LDHP_Enemy : 0x4330A0, 0xC, 0xA0, 0x40;
-	int LDN_Enemy : 0x4330A0, 0xC, 0xA0, 0x8;
 }
 startup
 {
 	print("Autosplitter loading....");
 	
 	settings.Add("startnewgame", true, "Start on New Game");
-	settings.SetToolTip("startnewgame", "Start on New Game select - use timer offset 0.66");
+	settings.SetToolTip("startnewgame", "Start on New Game select - use timer offset 0.33");
 	
 	settings.Add("startngplus", false, "Start on New Game Plus");
-	settings.SetToolTip("startngplus", "Start on New Game Plus file load - use timer offset 3.83");
+	settings.SetToolTip("startngplus", "Start on New Game Plus file load - use timer offset 0.05");
 	
 	settings.Add("killenemies", true, "Kill Enemies");
 	
@@ -215,24 +211,35 @@ startup
 	
 	vars.gameConnected = false;
 	vars.timerJustStarted = false;
+	vars.timerStartedSinceBoot = false;
 	vars.timer_OnStart = (EventHandler)((s, e) =>
 	{
 		vars.timerJustStarted = true;
 	});
 	timer.OnStart += vars.timer_OnStart;
+
+	// offsets that can't be in state
+	vars.enemyBookData = 0x783F8;
+	vars.inventoryData = 0xCA50;
+	vars.endingNames = new[] { "Normal End", "Planeptune End", "Lastation End", "Lowee End", "Leanbox End", "Maker End", "True Ending", "Conquest Ending", "Holy Sword Ending"};
 	
 	print("Startup complete! CREDITS: Marenthyu <marenthyu@marenthyu.de>, Dabomstew");
 	
 }
 shutdown
 {
+	try {
 	timer.OnStart -= vars.timer_OnStart;
+	} catch {}
+	vars.gameConnected = false;
+	vars.timerStartedSinceBoot = false;
 }
 init
 {
 
 	print("Game found!");
 	print("module size: " + modules.First().ModuleMemorySize);
+	vars.timerStartedSinceBoot = false;
 	
 	if (modules.First().ModuleMemorySize == 10620928) {
 		print("Found and confirmed GoG Version");
@@ -252,6 +259,7 @@ init
 exit
 {
 	vars.gameConnected = false;
+	vars.timerStartedSinceBoot = false;
 }
 update
 {
@@ -313,16 +321,17 @@ update
 		
 		// read initial kill values
 		vars.initialKills = new short[5009]; // highest enemy id is 5008
-		byte[] enemyBook = memory.ReadBytes((System.IntPtr) (current.SaveBlock + 0x783F8), (int) (current.EnemyBookSize*8));
+		byte[] enemyBook = memory.ReadBytes((System.IntPtr) (current.SaveBlock + vars.enemyBookData), (int) (current.EnemyBookSize*8));
 		for(int i = 0; i < current.EnemyBookSize; i++) {
 			vars.initialKills[BitConverter.ToInt16(enemyBook, i*8)] = BitConverter.ToInt16(enemyBook, i*8 + 4);
 		}
 		vars.timerJustStarted = false;
+		vars.timerStartedSinceBoot = true;
 	}
 }
 split
 {
-	if(vars.timerJustStarted) {
+	if(!vars.gameConnected || vars.timerJustStarted || !vars.timerStartedSinceBoot) {
 		// edge case, don't try anything this cycle
 		return false;
 	}
@@ -370,7 +379,7 @@ split
 	
 	// split for enemy kills
 	if(vars.enemySplitsHit < vars.enemySplitsActive) {
-		byte[] enemyBook = memory.ReadBytes((System.IntPtr) (current.SaveBlock + 0x783F8), (int) (current.EnemyBookSize*8));
+		byte[] enemyBook = memory.ReadBytes((System.IntPtr) (current.SaveBlock + vars.enemyBookData), (int) (current.EnemyBookSize*8));
 		for(int i = 0; i < current.EnemyBookSize; i++) {
 			short enemyID = BitConverter.ToInt16(enemyBook, i*8);
 			int kills = BitConverter.ToInt16(enemyBook, i*8 + 4) - vars.initialKills[enemyID];
@@ -425,7 +434,7 @@ split
 		int midcompanyAEItemCount = 0;
 		int midcompanyCDItemCount = 0;
 		int graveyardAEItemCount = 0;
-		byte[] inventory = memory.ReadBytes((System.IntPtr) (current.SaveBlock + 0xCA50), (int) (current.InventorySize*4));
+		byte[] inventory = memory.ReadBytes((System.IntPtr) (current.SaveBlock + vars.inventoryData), (int) (current.InventorySize*4));
 		for(int i = 0; i < current.InventorySize; i++) {
 			short itemID = BitConverter.ToInt16(inventory, i*4);
 			byte amount = inventory[i*4 + 2];
@@ -518,7 +527,7 @@ start
 	{
 		return true;
 	}
-	if (settings["startngplus"] && (current.Cutscene != null && current.Cutscene.Equals("Prelude to the End")))
+	if (settings["startngplus"] && current.Cutscene != null && Array.IndexOf(vars.endingNames, current.Cutscene.ToString()) > -1)
 	{
 		return true;
 	}
