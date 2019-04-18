@@ -1,13 +1,13 @@
 state("NeptuniaRebirth2", "Steam")
 {
-	int SaveBlock : 0x429060;
-	string64 Cutscene : 0x429060, 0xEEC;
-	int EnemyBookSize : 0x429060, 0x783F4;
-	int InventorySize : 0x429060, 0xCA4C;
-	byte PlaneptuneShares : 0x429060, 0xF1C;
-	byte LeanboxShares : 0x429060, 0xF20;
-	byte LastationShares : 0x429060, 0xF24;
-	byte LoweeShares : 0x429060, 0xF28;
+	int SaveBlock : 0x442F60;
+	string64 Cutscene : 0x442F60, 0xEEC;
+	int EnemyBookSize : 0x442F60, 0x783F4;
+	int InventorySize : 0x442F60, 0xCA4C;
+	byte PlaneptuneShares : 0x442F60, 0xF1C;
+	byte LeanboxShares : 0x442F60, 0xF20;
+	byte LastationShares : 0x442F60, 0xF24;
+	byte LoweeShares : 0x442F60, 0xF28;
 }
 state("NeptuniaRebirth2", "GoG")
 {
@@ -246,8 +246,8 @@ init
 		version = "GoG";
 		vars.gameConnected = true;
 	}
-	else if (modules.First().ModuleMemorySize == 10637312) {
-		print("Found and confirmed Steam Version 05.18.2018 Patch");
+	else if (modules.First().ModuleMemorySize == 10752000) {
+		print("Found and confirmed Steam Version 04.15.2019 Patch");
 		version = "Steam";
 		vars.gameConnected = true;
 	}
@@ -338,6 +338,11 @@ split
 	// split for cutscene
 	if (settings["cutscenes"])
 	{
+		try {
+			if(!current.Cutscene.Equals(old.Cutscene)) {
+				print("Cutscene changed to: "+current.Cutscene);
+			}
+		} catch {}
 		try {
 			if (!current.Cutscene.Equals(old.Cutscene) && settings[current.Cutscene])
 			{
