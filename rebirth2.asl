@@ -1,13 +1,13 @@
 state("NeptuniaRebirth2", "Steam")
 {
-	int SaveBlock : 0x442F60;
-	string64 Cutscene : 0x442F60, 0xEEC;
-	int EnemyBookSize : 0x442F60, 0x783F4;
-	int InventorySize : 0x442F60, 0xCA4C;
-	byte PlaneptuneShares : 0x442F60, 0xF1C;
-	byte LeanboxShares : 0x442F60, 0xF20;
-	byte LastationShares : 0x442F60, 0xF24;
-	byte LoweeShares : 0x442F60, 0xF28;
+	int SaveBlock : 0x442F50;
+	string64 Cutscene : 0x442F50, 0xEEC;
+	int EnemyBookSize : 0x442F50, 0x783F4;
+	int InventorySize : 0x442F50, 0xCA4C;
+	byte PlaneptuneShares : 0x442F50, 0xF1C;
+	byte LeanboxShares : 0x442F50, 0xF20;
+	byte LastationShares : 0x442F50, 0xF24;
+	byte LoweeShares : 0x442F50, 0xF28;
 }
 state("NeptuniaRebirth2", "GoG")
 {
