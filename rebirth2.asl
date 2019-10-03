@@ -8,6 +8,7 @@ state("NeptuniaRebirth2", "Steam")
 	byte LeanboxShares : 0x442F50, 0xF20;
 	byte LastationShares : 0x442F50, 0xF24;
 	byte LoweeShares : 0x442F50, 0xF28;
+	byte LeanboxConquestFlag : 0x442F50, 0x7ED;
 }
 state("NeptuniaRebirth2", "GoG")
 {
@@ -19,6 +20,7 @@ state("NeptuniaRebirth2", "GoG")
 	byte LeanboxShares : 0x424F60, 0xF20;
 	byte LastationShares : 0x424F60, 0xF24;
 	byte LoweeShares : 0x424F60, 0xF28;
+	byte LeanboxConquestFlag : 0x424F60, 0x7ED;
 }
 startup
 {
@@ -72,6 +74,11 @@ startup
 	settings.Add("planeptune55", true, "Split on 55% Planeptune Shares", "shares");
 	settings.Add("all15", false, "All Nations 15% Shares", "shares");
 	settings.SetToolTip("all15", "Split when all nations have 15% shares *after* you get 50% Lastation/Lowee/Leanbox.");
+	
+	// Event Flags
+	settings.Add("eventflags", true, "Split with Event Flags");
+	
+	settings.Add("leanboxcq", true, "Split on Leanbox Conquest Event Flag", "eventflags");
 	
 	
 	// Cutscenes
@@ -308,6 +315,8 @@ update
 		vars.planeptuneSharesSplit = false;
 		vars.allSharesSplit = false;
 		
+		vars.leanboxCQSplit = false;
+		
 		// count item splits
 		vars.itemSplitsActive += settings["spiderwebs"] ? 1 : 0;
 		vars.itemSplitsActive += settings["d60Mats"] ? 1 : 0;
@@ -531,6 +540,14 @@ split
 	else if(vars.slowRefresh) {
 		vars.slowRefresh = false;
 		refreshRate = 60;
+	}
+	
+	if(settings["eventflags"]) {
+		if(settings["leanboxcq"] && !vars.leanboxCQSplit && current.LeanboxConquestFlag == 1 && old.LeanboxConquestFlag == 0) {
+			vars.leanboxCQSplit = true;
+			print("Split for Leanbox Conquest event flag");
+			return true;
+		}
 	}
 }
 start
