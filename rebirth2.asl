@@ -8,6 +8,7 @@ state("NeptuniaRebirth2", "Steam")
 	byte LeanboxShares : 0x442F50, 0xF20;
 	byte LastationShares : 0x442F50, 0xF24;
 	byte LoweeShares : 0x442F50, 0xF28;
+	byte LeanboxConquestFlag : 0x442F50, 0x7ED;
 }
 state("NeptuniaRebirth2", "GoG")
 {
@@ -19,6 +20,7 @@ state("NeptuniaRebirth2", "GoG")
 	byte LeanboxShares : 0x424F60, 0xF20;
 	byte LastationShares : 0x424F60, 0xF24;
 	byte LoweeShares : 0x424F60, 0xF28;
+	byte LeanboxConquestFlag : 0x424F60, 0x7ED;
 }
 startup
 {
@@ -73,6 +75,11 @@ startup
 	settings.Add("all15", false, "All Nations 15% Shares", "shares");
 	settings.SetToolTip("all15", "Split when all nations have 15% shares *after* you get 50% Lastation/Lowee/Leanbox.");
 	
+	// Event Flags
+	settings.Add("eventflags", true, "Split with Event Flags");
+	
+	settings.Add("leanboxcq", true, "Split on Leanbox Conquest Event Flag", "eventflags");
+	
 	
 	// Cutscenes
 	settings.Add("cutscenes", true, "Split with Cutscene");
@@ -91,7 +98,7 @@ startup
 	// Chapter 2
 	settings.Add("ch2", true, "Chapter 2", "cutscenes");
 	
-	settings.Add("Ch. 2 - The Crossroads of Defeat", false, "Begin Chapter 1", "ch2");
+	settings.Add("Ch. 2 - The Crossroads of Defeat", false, "Start Chapter 2", "ch2");
 	
 	settings.Add("Ch. 2 - Good-bye, Uni", true, "Killed Linda. For the second time.", "ch2");
 	settings.SetToolTip("Ch. 2 - Good-bye, Uni", "Uni leaves. <sadface>");
@@ -109,6 +116,8 @@ startup
 	settings.Add("Ch. 2 - Uni's Defeat", true, "Killed Uni", "ch2");
 	
 	settings.Add("Ch. 2 - Warechu Defeated", true, "Killed Warechu 1", "ch2");
+	
+	settings.Add("Ch. 2 - Lowee", false, "Entered Lowee for the first time", "ch2");
 	
 	settings.Add("Ch. 2 - Lowee's Twins", false, "Before Underling 3 Fight (Menuing Split)", "ch2");
 	
@@ -129,6 +138,8 @@ startup
 	
 	settings.Add("Ch. 2 - Gathered Materials", true, "Ch. 2 - Gathered Materials", "ch2");
 	settings.SetToolTip("Ch. 2 - Gathered Materials", "Hand in Boat Parts to enter Leanbox");
+	
+	settings.Add("Ch. 2 - Leanbox", false, "Entered Leanbox for the first time", "ch2");
 	
 	settings.Add("Ch. 2 - Underling Retaliates", true, "Killed Underling+Warechu", "ch2");
 	
@@ -162,6 +173,8 @@ startup
 	// Chapter 5
 	settings.Add("ch5", true, "Chapter 5", "cutscenes");
 	
+	settings.Add("Ch. 5 - Approaching Shadows", false, "Start Chapter 5", "ch5");
+	
 	settings.Add("Ch. 5 - CPU Support", true, "Lose to CFW Magic", "ch5");
 	
 	settings.Add("Ch. 5 - Giant Warechu Defeated!", true, "Killed Venomous Warechu", "ch5");
@@ -176,6 +189,8 @@ startup
 	
 	// Conquest
 	settings.Add("cq", true, "Conquest", "cutscenes");
+	
+	settings.Add("Apocalypse - Savior's Sorrow", false, "Start ASavior's Sorrow", "cq");
 	
 	settings.Add("Apocalypse - Noire's Farewell", false, "Preparations", "cq");
 	settings.SetToolTip("Apocalypse - Noire's Farewell", "Menuing split, splits when watching Noire Cutscene");
@@ -299,6 +314,8 @@ update
 		vars.lastationSharesSplit = false;
 		vars.planeptuneSharesSplit = false;
 		vars.allSharesSplit = false;
+		
+		vars.leanboxCQSplit = false;
 		
 		// count item splits
 		vars.itemSplitsActive += settings["spiderwebs"] ? 1 : 0;
@@ -523,6 +540,14 @@ split
 	else if(vars.slowRefresh) {
 		vars.slowRefresh = false;
 		refreshRate = 60;
+	}
+	
+	if(settings["eventflags"]) {
+		if(settings["leanboxcq"] && !vars.leanboxCQSplit && current.LeanboxConquestFlag == 1 && old.LeanboxConquestFlag == 0) {
+			vars.leanboxCQSplit = true;
+			print("Split for Leanbox Conquest event flag");
+			return true;
+		}
 	}
 }
 start
