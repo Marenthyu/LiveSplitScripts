@@ -315,6 +315,7 @@ update
 		vars.planeptuneSharesSplit = false;
 		vars.allSharesSplit = false;
 		
+		vars.canSplitLeanboxCQ = false;
 		vars.leanboxCQSplit = false;
 		
 		// count item splits
@@ -352,6 +353,14 @@ split
 		// edge case, don't try anything this cycle
 		return false;
 	}
+	
+	// arm leanbox conquest split
+	try {
+		if(current.Cutscene.Equals("Ch. 2 - Leanbox")) {
+			vars.canSplitLeanboxCQ = true;
+		}
+	} catch {}
+	
 	// split for cutscene
 	if (settings["cutscenes"])
 	{
@@ -543,7 +552,7 @@ split
 	}
 	
 	if(settings["eventflags"]) {
-		if(settings["leanboxcq"] && !vars.leanboxCQSplit && current.LeanboxConquestFlag == 1 && old.LeanboxConquestFlag == 0) {
+		if(settings["leanboxcq"] && !vars.leanboxCQSplit && current.LeanboxConquestFlag == 1 && old.LeanboxConquestFlag == 0 && vars.canSplitLeanboxCQ) {
 			vars.leanboxCQSplit = true;
 			print("Split for Leanbox Conquest event flag");
 			return true;
