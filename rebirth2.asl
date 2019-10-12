@@ -238,8 +238,6 @@ startup
 	vars.inventoryData = 0xCA50;
 	vars.endingNames = new[] { "Normal End", "Planeptune End", "Lastation End", "Lowee End", "Leanbox End", "Maker End", "True Ending", "Conquest Ending", "Holy Sword Ending"};
 	
-	vars.characterData = File.ReadAllBytes("G:\\neptunia\\gamefiles\\rebirth2\\system\\database\\stcharaplayer.gbin");
-	
 	settings.Add("startingparty", false, "Custom Starting Party");
 	
 	settings.Add("char1", false, "Neptune", "startingparty"); 
