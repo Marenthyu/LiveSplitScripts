@@ -315,6 +315,21 @@ startup
 		return -1; // should be impossible to reach
 	});
 	
+	vars.setModelBytes = (Func<Process, int, int, byte, byte, bool>) ((mem, saveBlock, slot, modelByte1, modelByte2) => {
+		mem.WriteBytes((System.IntPtr)(saveBlock + 0xF30 + 0x32 + 0x508*slot), new byte[] { modelByte1, modelByte2 });
+		return true;
+	});
+	
+	vars.setModelRecolorByte = (Func<Process, int, int, byte, bool>) ((mem, saveBlock, slot, recolorByte) => {
+		mem.WriteBytes((System.IntPtr)(saveBlock + 0xF30 + 0x34 + 0x508*slot), new byte[] { recolorByte });
+		return true;
+	});
+	
+	vars.deleteCostumeBytes = (Func<Process, int, int, bool>) ((mem, saveBlock, slot) => {
+		mem.WriteBytes((System.IntPtr)(saveBlock + 0xF30 + 0xB8 + 0x508*slot), new byte[] { 0x00, 0x00 });
+		return true;
+	});
+	
 	// data for when nepgear is required
 	vars.nepgearCutscenes = new Dictionary<string, string>();
 	vars.nepgearCutscenes.Add("Ch. 1 - Nepgear Awakens", "BAEAAAYAAQBOZXBnZWFyAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAN8AAAAGAAQABgApAAEA/wEAAgAAAAAAAB4FAAAAAAAAFQQAAGQAAAAeBQAAoAAAABUEAACeAAAAlAAAAIwAAACPAAAAjQAAAJYAAABkAAAAdgAAAAUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIwAAAE4EAABYBgAACQcAAG0HAAA1CAAAIwwAACQMAAAnDAAAJQwAACYMAAAoDAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAG8AAAABAAAAAAAAAHAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAABQAAAAAAAAAJAAAAAAAAAAoAAAAFAAAADQAAAAAAAAAVAAAAAAAAAB0AAAAAAAAAHwAAAAIAAAAiAAAAAAAAACQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAYAAQAGAAAABgAEAAYAAQAGAAAABgAEAAAAAAAGAAAABgAEAAAAAAAAAAAAAAAAAAAAAACamZk9mpkZPgAAAAAAAAAAAAAAAAYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACMzBKg==");
@@ -334,6 +349,19 @@ startup
 	vars.delGearCutscenes = new String[] { "Ch. 1 - Planeptune's Mascot", "Ch. 2 - Good-bye, Uni", "Ch. 2 - Uni's Defeat", "Ch. 4 - Goddess Awakening"};
 	vars.delUniCutscenes = new String[] { "Ch. 2 - Good-bye, Uni", "Ch. 4 - Goddess Awakening"};
 	vars.introCutscenes = new String[] { "New Game", "Prelude to the End", "Prologue - Gamindustri Graveyard", "Prologue - Escaping Judgment", "Prologue - The Trio Escape", "Ch. 1 - Divine Oratorio"};
+	
+	// Other Memory Edit Settings
+	
+	settings.Add("memoryedits", false, "Other Memory Edits");
+	settings.Add("randommodels", false, "Randomize Character Models each Cutscene", "memoryedits");
+	settings.Add("randommodel0", false, "First Party Member", "randommodels");
+	settings.Add("randommodel1", false, "Second Party Member", "randommodels");
+	settings.Add("randommodel2", false, "Third Party Member", "randommodels");
+	settings.Add("randommodel3", false, "Fourth Party Member", "randommodels");
+	
+	vars.models = new byte[,] {{0x05, 0x00}, {0x0F, 0x00}, {0x18, 0x00}, {0x22, 0x00}, {0x29, 0x00}, {0x2A, 0x00}, {0x2B, 0x00}, {0x2C, 0x00}, {0x33, 0x00}, {0x34, 0x00}, {0x35, 0x00}, {0x36, 0x00}, {0x3D, 0x00}, {0x3E, 0x00}, {0x3F, 0x00}, {0x40, 0x00}, {0x47, 0x00}, {0x48, 0x00}, {0x49, 0x00}, {0x4A, 0x00}, {0x51, 0x00}, {0x65, 0x00}, {0x83, 0x00}, {0x8D, 0x00}, {0x97, 0x00}, {0x98, 0x00}, {0x99, 0x00}, {0x9A, 0x00}, {0xA1, 0x00}, {0xA2, 0x00}, {0xA3, 0x00}, {0xA4, 0x00}, {0xBF, 0x00}, {0xC0, 0x00}, {0xC1, 0x00}, {0xC2, 0x00}, {0xC9, 0x00}, {0xCA, 0x00}, {0xCB, 0x00}, {0xCC, 0x00}, {0xD3, 0x00}, {0xD4, 0x00}, {0xD5, 0x00}, {0xD6, 0x00}, {0xDD, 0x00}, {0xDE, 0x00}, {0xDF, 0x00}, {0xE0, 0x00}, {0xE7, 0x00}, {0xE8, 0x00}, {0xE9, 0x00}, {0xEA, 0x00}, {0x05, 0x01}, {0x0F, 0x01}, {0x19, 0x01}, {0x23, 0x01}, {0x2D, 0x01}, {0x2F, 0x01}, {0x31, 0x01}, {0x33, 0x01}, {0x35, 0x01}, {0x36, 0x01}, {0x37, 0x01}, {0x38, 0x01}, {0x3B, 0x01}, {0x3C, 0x01}, {0x3D, 0x01}, {0x3E, 0x01}, {0x41, 0x01}, {0x42, 0x01}, {0x43, 0x01}, {0x44, 0x01}, {0x45, 0x01}, {0x46, 0x01}, {0x47, 0x01}, {0x48, 0x01}, {0x49, 0x01}, {0x4A, 0x01}, {0x4B, 0x01}, {0x4C, 0x01}, {0x4D, 0x01}, {0x4E, 0x01}, {0x4F, 0x01}, {0x50, 0x01}, {0x51, 0x01}, {0x52, 0x01}, {0x53, 0x01}, {0x54, 0x01}, {0x55, 0x01}, {0x56, 0x01}, {0x57, 0x01}, {0x58, 0x01}, {0x59, 0x01}, {0x5A, 0x01}, {0x5B, 0x01}, {0x5C, 0x01}, {0x5E, 0x01}, {0x5F, 0x01}, {0x60, 0x01}, {0x61, 0x01}, {0x62, 0x01}, {0x63, 0x01}, {0x64, 0x01}, {0x66, 0x01}, {0x67, 0x01}, {0x68, 0x01}, {0x69, 0x01}, {0x6A, 0x01}, {0x6D, 0x01}, {0x6E, 0x01}, {0x70, 0x01}, {0x71, 0x01}, {0x72, 0x01}, {0x73, 0x01}, {0x74, 0x01}, {0x75, 0x01}, {0x76, 0x01}, {0x77, 0x01}, {0x78, 0x01}, {0x79, 0x01}, {0x7A, 0x01}, {0x7B, 0x01}, {0x7C, 0x01}, {0x7D, 0x01}, {0x7E, 0x01}, {0x7F, 0x01}, {0x80, 0x01}, {0x81, 0x01}, {0x82, 0x01}, {0x83, 0x01}, {0x84, 0x01}, {0x85, 0x01}, {0x86, 0x01}, {0x87, 0x01}, {0x88, 0x01}, {0xA1, 0x01}, {0xA3, 0x01}, {0xAD, 0x01}, {0xB1, 0x01}, {0xB4, 0x01}, {0xB5, 0x01}, {0xB6, 0x01}, {0xB7, 0x01}, {0xB8, 0x01}, {0xB9, 0x01}, {0xBA, 0x01}, {0xBB, 0x01}, {0xBC, 0x01}, {0xBD, 0x01}, {0xBE, 0x01}, {0xBF, 0x01}, {0xC0, 0x01}, {0xC1, 0x01}, {0xC2, 0x01}, {0xC3, 0x01}, {0xC4, 0x01}, {0xC5, 0x01}, {0xC6, 0x01}, {0xC7, 0x01}, {0xC8, 0x01}, {0xC9, 0x01}, {0xCA, 0x01}, {0xCB, 0x01}, {0xCC, 0x01}, {0xCD, 0x01}, {0xCE, 0x01}, {0xCF, 0x01}, {0xD0, 0x01}, {0xD1, 0x01}, {0xD2, 0x01}, {0xD3, 0x01}, {0xD4, 0x01}, {0xD5, 0x01}, {0xD9, 0x01}, {0xDA, 0x01}, {0xDB, 0x01}, {0xDC, 0x01}, {0xDF, 0x01}, {0xE0, 0x01}, {0xE1, 0x01}, {0xE2, 0x01}, {0xE3, 0x01}, {0xE4, 0x01}, {0xE5, 0x01}, {0xE7, 0x01}, {0xE8, 0x01}, {0xEA, 0x01}, {0xEB, 0x01}, {0xEC, 0x01}, {0xED, 0x01}, {0xEF, 0x01}, {0xF2, 0x01}, {0xF3, 0x01}, {0xF4, 0x01}, {0xF7, 0x01}, {0xF8, 0x01}, {0x01, 0x02}, {0x02, 0x02}, {0x03, 0x02}, {0x04, 0x02}, {0x05, 0x02} };
+	
+	vars.random = new Random();
 	
 	print("Startup complete! CREDITS: Marenthyu <marenthyu@marenthyu.de>, Dabomstew");
 	
@@ -444,6 +472,28 @@ update
 		}
 		vars.timerJustStarted = false;
 		vars.timerStartedSinceBoot = true;
+		// read initial party data from memory
+		if (settings["startingparty"]) {
+			// find stcharaplayer.gbin in ram
+			var target = new SigScanTarget(0, "47 42 4E 4C 01 00 02 00 10 00 00 00 04 00 00 00 01 00 00 00 00 00 00 00 17 00 00 00 08 05 00 00 55 01 00 00 C0 73");
+			int scanOffset = 0;
+			foreach(var page in memory.MemoryPages()) {
+				var scanner = new SignatureScanner(memory, page.BaseAddress, (int)page.RegionSize);
+				if ((scanOffset = (int)scanner.Scan(target)) != 0)
+					break;
+			}
+			if(scanOffset == 0) {
+				print("Could not find stcharaplayer data, aborting");
+				return false;
+			}
+			vars.characterData = memory.ReadBytes((System.IntPtr)(scanOffset - 0x87F0), 0x8830);
+			print("Loaded initial character data.");
+		}
+		
+	}
+	// Do not run if the timer has not been started as that means some data has not yet been properly set up.
+	if (!vars.timerStartedSinceBoot) {
+	    return false;
 	}
 	
 	if(settings["startingparty"]) {
@@ -451,24 +501,13 @@ update
 			if(current.Cutscene.Equals("Ch. 1 - Divine Oratorio") && !old.Cutscene.Equals("Ch. 1 - Divine Oratorio")) {
 				// write starting party
 				print("Trying to write party.");
-				// find stcharaplayer.gbin in ram
-				var target = new SigScanTarget(0, "47 42 4E 4C 01 00 02 00 10 00 00 00 04 00 00 00 01 00 00 00 00 00 00 00 17 00 00 00 08 05 00 00 55 01 00 00 C0 73");
-				int scanOffset = 0;
-				foreach(var page in memory.MemoryPages()) {
-					var scanner = new SignatureScanner(memory, page.BaseAddress, (int)page.RegionSize);
-					if ((scanOffset = (int)scanner.Scan(target)) != 0)
-						break;
-				}
-				if(scanOffset == 0) {
-					print("Could not find stcharaplayer data, aborting");
-					return false;
-				}
-				vars.characterData = memory.ReadBytes((System.IntPtr)(scanOffset - 0x87F0), 0x8830);
 				int partyIdx = 0xF30;
 				vars.numCharacters = 0;
 				vars.characters = new List<ushort>();
+				print("Getting wanted characters from settings...");
 				for(int i=1;i<23;i++) {
 					if(settings["char"+i]) {
+						print("You want character " + i);
 						byte[] data = new byte[0x508];
 						System.Array.Copy(vars.characterData, i*0x508, data, 0, 0x508);
 						vars.characters.Add(BitConverter.ToUInt16(data, 4));
@@ -545,8 +584,10 @@ update
 			}
 			
 			// deal with any party members we dont want / do want
-			if(!((IDictionary<String, object>)vars).ContainsKey("characters")) {
+			try {
+			if(!((IDictionary<String, object>)vars).ContainsKey("characters") || vars.characters.Count == 0) {
 				// re-establish characters from preferences
+				print("Re-establishing wanted characters from Settings");
 				vars.characters = new List<ushort>();
 				for(int i=1;i<23;i++) {
 					if(settings["char"+i]) {
@@ -555,10 +596,15 @@ update
 				}
 				print(String.Join("; ", vars.characters));
 			}
+			} catch {
+			print("you dun goofed up");
+			}
 			if(!vars.inGhostNepgear && !vars.inGhostUni && !System.Array.Exists((String[]) vars.introCutscenes, element => element.Equals(current.Cutscene))) {
 				vars.partyCheckTick++;
 				if(vars.partyCheckTick % 10 == 0)
 				{
+					//print("Checking party...");
+					//print(String.Join("; ", vars.characters)); 
 					int dataIdx = 0;
 					while(vars.getMemberAtDataSlot(memory, current.SaveBlock, dataIdx) > 0) {
 						byte status = vars.getStatusByte(memory, current.SaveBlock, dataIdx);
@@ -592,6 +638,33 @@ update
 			}
 			
 		} catch {}
+	}
+	
+	if (settings["memoryedits"]) {
+		if (settings["randommodels"]) {
+			
+				if(!current.Cutscene.Equals(old.Cutscene)) {
+					print("Changing models as cutscene changed...");
+					for (int i = 0;i<4;i++) {
+						try {
+							if (settings["randommodel" + i]) {
+								// Two-dimensional array has weird lengths...
+								int r = vars.random.Next(vars.models.Length/2);
+								int member = vars.getMemberAtPartySlot(memory, current.SaveBlock, i);
+								//print("Member ID at slot " + i + " is " + member);
+								int index = vars.dataIndexOfCharacter(memory, current.SaveBlock, member);
+								//print("Character dataIndex: " + index);
+								vars.setModelBytes(memory, current.SaveBlock, index, vars.models[r, 0], vars.models[r, 1]);
+								vars.deleteCostumeBytes(memory, current.SaveBlock, index);
+							}
+						} catch (Exception e) {
+							print("Error checking for character " + i + ", skipping model swap");
+							print(e.Message);
+						}
+					}
+				}
+			
+		}
 	}
 }
 split
