@@ -519,7 +519,7 @@ update
 					memory.WriteBytes((System.IntPtr) (current.SaveBlock + 0xF30 + ngIndex*0x508), data);
 					vars.inGhostNepgear = true;
 				}
-				if(System.Array.Exists(vars.delGearCutscenes, element => element.Equals(current.Cutscene)) && !old.Cutscene.Equals(current.Cutscene)) {
+				if(System.Array.Exists((String[]) vars.delGearCutscenes, element => element.Equals(current.Cutscene)) && !old.Cutscene.Equals(current.Cutscene)) {
 					// re-disable nepgear
 					int ngIndex = vars.dataIndexOfCharacter(memory, current.SaveBlock, 6);
 					vars.setStatusByte(memory, current.SaveBlock, ngIndex, (byte) 0x44);
@@ -537,7 +537,7 @@ update
 					memory.WriteBytes((System.IntPtr) (current.SaveBlock + 0xF30 + uIndex*0x508), data);
 					vars.inGhostUni = true;
 				}
-				if(System.Array.Exists(vars.delUniCutscenes, element => element.Equals(current.Cutscene)) && !old.Cutscene.Equals(current.Cutscene)) {
+				if(System.Array.Exists((String[]) vars.delUniCutscenes, element => element.Equals(current.Cutscene)) && !old.Cutscene.Equals(current.Cutscene)) {
 					int uIndex = vars.dataIndexOfCharacter(memory, current.SaveBlock, 8);
 					vars.setStatusByte(memory, current.SaveBlock, uIndex, (byte) 0x44);
 					vars.inGhostUni = false;
@@ -555,7 +555,7 @@ update
 				}
 				print(String.Join("; ", vars.characters));
 			}
-			if(!vars.inGhostNepgear && !vars.inGhostUni && !System.Array.Exists(vars.introCutscenes, element => element.Equals(current.Cutscene))) {
+			if(!vars.inGhostNepgear && !vars.inGhostUni && !System.Array.Exists((String[]) vars.introCutscenes, element => element.Equals(current.Cutscene))) {
 				vars.partyCheckTick++;
 				if(vars.partyCheckTick % 10 == 0)
 				{
