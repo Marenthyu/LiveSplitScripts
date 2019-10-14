@@ -493,7 +493,7 @@ update
 	}
 	// Do not run if the timer has not been started as that means some data has not yet been properly set up.
 	if (!vars.timerStartedSinceBoot) {
-	    return false;
+	    return true;
 	}
 	
 	if(settings["startingparty"]) {
@@ -882,6 +882,9 @@ split
 start
 {
 	// New Game
+	if(!current.Cutscene.Equals(old.Cutscene)) {
+		print("Cutscene changed, new cutscene: " + current.Cutscene);
+	}
 	if (settings["startnewgame"] && (current.Cutscene != null && current.Cutscene.Equals("New Game")))
 	{
 		return true;
