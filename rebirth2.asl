@@ -238,6 +238,131 @@ startup
 	vars.inventoryData = 0xCA50;
 	vars.endingNames = new[] { "Normal End", "Planeptune End", "Lastation End", "Lowee End", "Leanbox End", "Maker End", "True Ending", "Conquest Ending", "Holy Sword Ending"};
 	
+	settings.Add("startingparty", false, "Custom Starting Party");
+	
+	settings.Add("char1", false, "Neptune", "startingparty"); 
+	settings.Add("char2", false, "Noire", "startingparty"); 
+	settings.Add("char3", false, "Blanc", "startingparty"); 
+	settings.Add("char4", false, "Vert", "startingparty"); 
+	settings.Add("char5", false, "Nepgear", "startingparty"); 
+	settings.Add("char6", false, "Uni", "startingparty"); 
+	settings.Add("char7", false, "Rom", "startingparty"); 
+	settings.Add("char8", false, "Ram", "startingparty"); 
+	settings.Add("char9", false, "IF", "startingparty"); 
+	settings.Add("char10", false, "Compa", "startingparty"); 
+	settings.Add("char11", false, "Falcom", "startingparty"); 
+	settings.Add("char12", false, "Cyberconnect2", "startingparty"); 
+	settings.Add("char13", false, "Broccoli", "startingparty"); 
+	settings.Add("char14", false, "MarvelousAQL", "startingparty"); 
+	settings.Add("char15", false, "Tekken", "startingparty"); 
+	settings.Add("char16", false, "Histoire", "startingparty"); 
+	settings.Add("char17", false, "Red", "startingparty"); 
+	settings.Add("char18", false, "Cave", "startingparty"); 
+	settings.Add("char19", false, "5pb.", "startingparty"); 
+	settings.Add("char20", false, "Kei Jinguji", "startingparty"); 
+	settings.Add("char21", false, "Mina Nishizawa", "startingparty"); 
+	settings.Add("char22", false, "Chika Hakozaki", "startingparty");
+	
+	vars.backupPartySlots = new List<int>();
+	vars.backupDataSlots = new List<int>();
+	vars.backupLeaders = new List<bool>();
+	vars.backupCharacters = new List<ushort>();
+	vars.backupSkills = new List<byte[]>();
+	
+	vars.getPartyLeader = (Func<Process, int, ushort>) ((mem, saveBlock) => {
+		return BitConverter.ToUInt16(mem.ReadBytes((System.IntPtr)(saveBlock + 0xCA30), 2), 0);
+	});
+	
+	vars.setPartyLeader = (Func<Process, int, ushort, bool>) ((mem, saveBlock, character) => {
+		mem.WriteBytes((System.IntPtr)(saveBlock + 0xCA30), BitConverter.GetBytes(character));
+		return true;
+	});
+	
+	vars.getMemberAtPartySlot = (Func<Process, int, int, ushort>) ((mem, saveBlock, slot) => {
+		return BitConverter.ToUInt16(mem.ReadBytes((System.IntPtr)(saveBlock + 0xCA44 + 2*slot), 2), 0);
+	});
+	
+	vars.setMemberAtPartySlot = (Func<Process, int, int, ushort, bool>) ((mem, saveBlock, slot, character) => {
+		mem.WriteBytes((System.IntPtr)(saveBlock + 0xCA44 + 2*slot), BitConverter.GetBytes(character));
+		return true;
+	});
+	
+	vars.getMemberAtDataSlot = (Func<Process, int, int, ushort>) ((mem, saveBlock, slot) => {
+		return BitConverter.ToUInt16(mem.ReadBytes((System.IntPtr)(saveBlock + 0xF34 + 0x508*slot), 2), 0);
+	});
+	
+	vars.getStatusByte = (Func<Process, int, int, byte>) ((mem, saveBlock, slot) => {
+		return mem.ReadBytes((System.IntPtr)(saveBlock + 0xF30 + 0x508*slot), 1)[0];
+	});
+	
+	vars.setStatusByte = (Func<Process, int, int, byte, bool>) ((mem, saveBlock, slot, status) => {
+		mem.WriteBytes((System.IntPtr)(saveBlock + 0xF30 + 0x508*slot), new byte[] { status });
+		return true;
+	});
+	
+	vars.dataIndexOfCharacter = (Func<Process, int, int, int>) ((mem, saveBlock, character) => {
+		int slot = 0;
+		while(true) {
+			ushort sChar = vars.getMemberAtDataSlot(mem, saveBlock, slot);
+			if(sChar == 0) {
+				return -1;
+			}
+			if(sChar == character) {
+				return slot;
+			}
+			slot++;
+		}
+		return -1; // should be impossible to reach
+	});
+	
+	vars.setModelBytes = (Func<Process, int, int, byte, byte, bool>) ((mem, saveBlock, slot, modelByte1, modelByte2) => {
+		mem.WriteBytes((System.IntPtr)(saveBlock + 0xF30 + 0x32 + 0x508*slot), new byte[] { modelByte1, modelByte2 });
+		return true;
+	});
+	
+	vars.setModelRecolorByte = (Func<Process, int, int, byte, bool>) ((mem, saveBlock, slot, recolorByte) => {
+		mem.WriteBytes((System.IntPtr)(saveBlock + 0xF30 + 0x34 + 0x508*slot), new byte[] { recolorByte });
+		return true;
+	});
+	
+	vars.deleteCostumeBytes = (Func<Process, int, int, bool>) ((mem, saveBlock, slot) => {
+		mem.WriteBytes((System.IntPtr)(saveBlock + 0xF30 + 0xB8 + 0x508*slot), new byte[] { 0x00, 0x00 });
+		return true;
+	});
+	
+	// data for when nepgear is required
+	vars.nepgearCutscenes = new Dictionary<string, string>();
+	vars.nepgearCutscenes.Add("Ch. 1 - Nepgear Awakens", "BAEAAAYAAQBOZXBnZWFyAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAN8AAAAGAAQABgApAAEA/wEAAgAAAAAAAB4FAAAAAAAAFQQAAGQAAAAeBQAAoAAAABUEAACeAAAAlAAAAIwAAACPAAAAjQAAAJYAAABkAAAAdgAAAAUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIwAAAE4EAABYBgAACQcAAG0HAAA1CAAAIwwAACQMAAAnDAAAJQwAACYMAAAoDAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAG8AAAABAAAAAAAAAHAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAABQAAAAAAAAAJAAAAAAAAAAoAAAAFAAAADQAAAAAAAAAVAAAAAAAAAB0AAAAAAAAAHwAAAAIAAAAiAAAAAAAAACQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAYAAQAGAAAABgAEAAYAAQAGAAAABgAEAAAAAAAGAAAABgAEAAAAAAAAAAAAAAAAAAAAAACamZk9mpkZPgAAAAAAAAAAAAAAAAYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACMzBKg==");
+	vars.nepgearCutscenes.Add("Ch. 2 - Lastation's CPU Candidate", "BAEAAAYAAQBOZXBnZWFyAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACwCAAAGAAUABgApAAEA/wEAAgAAAAAAAJYFAAAAAAAALgQAAGQAAACWBQAAogAAAC4EAACkAAAAmgAAAJMAAACVAAAAkQAAAJsAAABkAAAAeAAAAAUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIwAAAE4EAABYBgAACQcAAG0HAAA1CAAAIwwAACQMAAAnDAAAJQwAACYMAAAoDAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAG8AAAABAAAAAAAAAHAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAABQAAAAAAAAAJAAAAAAAAAAoAAAAFAAAADQAAAAAAAAAVAAAAAAAAAB0AAAAAAAAAHwAAAAIAAAAiAAAAAAAAACQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAYAAQAGAAAABgAEAAYAAQAGAAAABgAEAAAAAAAGAAAABgAEAAAAAAAAAAAAAAAAAAAAAACamZk9mpkZPgAAAAAAAAAAAAAAAAYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACMzBKg==");
+	vars.nepgearCutscenes.Add("Ch. 2 - Underling - 0, Party - 2", "BAEAAAYAAQBOZXBnZWFyAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFQRAAAGAAoABgApAAEA/wEAAgAAAAAAAKQLAAAAAAAAqwQAAGQAAAC8BwAAswAAAKsEAADGAAAAuQAAALIAAACxAAAAqAAAALEAAABkAAAAiAAAAAUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIwAAAE4EAABbBgAAJQcAAG0HAAA1CAAAIwwAACQMAAAnDAAAJQwAACYMAAAoDAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAG8AAAABAAAAAAAAAHAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAABQAAAAAAAAAJAAAAAAAAAAoAAAAMAAAADQAAAAAAAAAVAAAAAQAAAB0AAAAAAAAAHwAAAAQAAAAiAAAAAAAAACQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAYAAQAGAAAABgAEAAYAAQAGAAAABgAEAAAAAAAGAAAABgAEAAAAAAAGAAYAAAAAAAAAAACamZk9mpkZPgAAAAAAAAAAAAAAAAYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACMzBKg==");
+	vars.nepgearCutscenes.Add("Ch. 3 - Nepgear and Uni",  "BAEAAAYAAQBOZXBnZWFyAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAE2RAQAGABwABgApAAEA/wEAAgAAAAAAAEYPAAAAAAAATwYAAGQAAABGDwAA5wAAAE8GAABGAQAAKgEAACQBAAAeAQAA/wAAAAoBAABkAAAAwwAAAAUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIwAAAFUEAABmBgAALgcAAG0HAAA1CAAAIwwAAEMNAABGDQAAJQwAAEUNAABHDQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAG8AAAABAAAAAAAAAHAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAABQAAAAYAAAAJAAAAAAAAAAoAAAATAAAADQAAAAAAAAAVAAAAAQAAAB0AAAAAAAAAHwAAAAQAAAAiAAAAAAAAACQAAAAAAAAAFgAAAAAAAAALAAAAAAAAAA4AAAAAAAAAGgAAAAAAAAAGAAAAAAAAABEAAAAAAAAAEgAAAAAAAAATAAAAAAAAABQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAYAAgAGAAAABgAAAAYAAgAGAAAABgAAAAYAAgAGAAAABgAAAAAAAAAGAAAABgAAAAAAAACamZk9mpkZPgAAAAAAAAAAAAAAAAYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACMzBKg==");
+	
+	// data for when uni is required
+	vars.uniCutscenes = new Dictionary<string, string>();
+	vars.uniCutscenes.Add("Ch. 2 - Lastation's CPU Candidate", "BCEAAAgAAQBVbmkAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAL8PAAAIAgoACAAzAAEAAwIEAgAAAAAAAAgHAAAAAAAATAQAAAAAAAAIBwAAswAAAEwEAAC0AAAApgAAALIAAACmAAAAugAAALYAAABkAAAAlQAAAAUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAGMEAABCBgAACgcAAHQHAABqCAAAOwwAADwMAAA/DAAAPQwAAD4MAABADAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHMAAAABAAAAAAAAAHQAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMwAAAAAAAAAzQAAAAAAAADQAAAAAAAAANQAAAAAAAAA1QAAAAAAAADdAAAAAAAAAOUAAAAAAAAA5wAAAAAAAADoAAAAAAAAAOwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAQAIAAQACAADAAgAAQAIAAQACAADAAAAAAAIAAQACAADAAAAAAAAAAAAAAAAAAAAAACamZk9mpkZPgAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgJzAKg==");
+	vars.uniCutscenes.Add("Ch. 3 - Nepgear and Uni",  "RAEAAAgAAQBVbmkAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAALoRAAAIAgoACAAzAAEAAwIEAgAAAAAAAAgHAAAAAAAATAQAAGQAAAAIBwAAswAAAEwEAAC0AAAApgAAALIAAACmAAAAugAAALYAAABkAAAAlQAAAAUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAGMEAABCBgAACgcAAHQHAABqCAAAOwwAADwMAAA/DAAAPQwAAD4MAABADAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHMAAAABAAAAAAAAAHQAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMwAAAAAAAAAzQAAAAAAAADQAAAAAAAAANQAAAAAAAAA1QAAAAAAAADdAAAAAAAAAOUAAAAAAAAA5wAAAAAAAADoAAAAAAAAAOwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAQAIAAQACAADAAgAAQAIAAQACAADAAAAAAAIAAQACAADAAAAAAAAAAAAAAAAAAAAAACamZk9mpkZPgAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgMzBKg==");
+	
+	vars.inGhostNepgear = false;
+	vars.inGhostUni = false;
+	vars.partyCheckTick = 0;
+	
+	vars.delGearCutscenes = new String[] { "Ch. 1 - Planeptune's Mascot", "Ch. 2 - Good-bye, Uni", "Ch. 2 - Uni's Defeat", "Ch. 4 - Goddess Awakening"};
+	vars.delUniCutscenes = new String[] { "Ch. 2 - Good-bye, Uni", "Ch. 4 - Goddess Awakening"};
+	vars.introCutscenes = new String[] { "New Game", "Prelude to the End", "Prologue - Gamindustri Graveyard", "Prologue - Escaping Judgment", "Prologue - The Trio Escape", "Ch. 1 - Divine Oratorio"};
+	
+	// Other Memory Edit Settings
+	
+	settings.Add("memoryedits", false, "Other Memory Edits");
+	settings.Add("randommodels", false, "Randomize Character Models each Cutscene", "memoryedits");
+	settings.Add("randommodel0", false, "First Party Member", "randommodels");
+	settings.Add("randommodel1", false, "Second Party Member", "randommodels");
+	settings.Add("randommodel2", false, "Third Party Member", "randommodels");
+	settings.Add("randommodel3", false, "Fourth Party Member", "randommodels");
+	
+	vars.models = new byte[,] {{0x05, 0x00}, {0x0F, 0x00}, {0x18, 0x00}, {0x22, 0x00}, {0x29, 0x00}, {0x2A, 0x00}, {0x2B, 0x00}, {0x2C, 0x00}, {0x33, 0x00}, {0x34, 0x00}, {0x35, 0x00}, {0x36, 0x00}, {0x3D, 0x00}, {0x3E, 0x00}, {0x3F, 0x00}, {0x40, 0x00}, {0x47, 0x00}, {0x48, 0x00}, {0x49, 0x00}, {0x4A, 0x00}, {0x51, 0x00}, {0x65, 0x00}, {0x83, 0x00}, {0x8D, 0x00}, {0x97, 0x00}, {0x98, 0x00}, {0x99, 0x00}, {0x9A, 0x00}, {0xA1, 0x00}, {0xA2, 0x00}, {0xA3, 0x00}, {0xA4, 0x00}, {0xBF, 0x00}, {0xC0, 0x00}, {0xC1, 0x00}, {0xC2, 0x00}, {0xC9, 0x00}, {0xCA, 0x00}, {0xCB, 0x00}, {0xCC, 0x00}, {0xD3, 0x00}, {0xD4, 0x00}, {0xD5, 0x00}, {0xD6, 0x00}, {0xDD, 0x00}, {0xDE, 0x00}, {0xDF, 0x00}, {0xE0, 0x00}, {0xE7, 0x00}, {0xE8, 0x00}, {0xE9, 0x00}, {0xEA, 0x00}, {0x05, 0x01}, {0x0F, 0x01}, {0x19, 0x01}, {0x23, 0x01}, {0x2D, 0x01}, {0x2F, 0x01}, {0x31, 0x01}, {0x33, 0x01}, {0x35, 0x01}, {0x36, 0x01}, {0x37, 0x01}, {0x38, 0x01}, {0x3B, 0x01}, {0x3C, 0x01}, {0x3D, 0x01}, {0x3E, 0x01}, {0x41, 0x01}, {0x42, 0x01}, {0x43, 0x01}, {0x44, 0x01}, {0x45, 0x01}, {0x46, 0x01}, {0x47, 0x01}, {0x48, 0x01}, {0x49, 0x01}, {0x4A, 0x01}, {0x4B, 0x01}, {0x4C, 0x01}, {0x4D, 0x01}, {0x4E, 0x01}, {0x4F, 0x01}, {0x50, 0x01}, {0x51, 0x01}, {0x52, 0x01}, {0x53, 0x01}, {0x54, 0x01}, {0x55, 0x01}, {0x56, 0x01}, {0x57, 0x01}, {0x58, 0x01}, {0x59, 0x01}, {0x5A, 0x01}, {0x5B, 0x01}, {0x5C, 0x01}, {0x5E, 0x01}, {0x5F, 0x01}, {0x60, 0x01}, {0x61, 0x01}, {0x62, 0x01}, {0x63, 0x01}, {0x64, 0x01}, {0x66, 0x01}, {0x67, 0x01}, {0x68, 0x01}, {0x69, 0x01}, {0x6A, 0x01}, {0x6D, 0x01}, {0x6E, 0x01}, {0x70, 0x01}, {0x71, 0x01}, {0x72, 0x01}, {0x73, 0x01}, {0x74, 0x01}, {0x75, 0x01}, {0x76, 0x01}, {0x77, 0x01}, {0x78, 0x01}, {0x79, 0x01}, {0x7A, 0x01}, {0x7B, 0x01}, {0x7C, 0x01}, {0x7D, 0x01}, {0x7E, 0x01}, {0x7F, 0x01}, {0x80, 0x01}, {0x81, 0x01}, {0x82, 0x01}, {0x83, 0x01}, {0x84, 0x01}, {0x85, 0x01}, {0x86, 0x01}, {0x87, 0x01}, {0x88, 0x01}, {0xA1, 0x01}, {0xA3, 0x01}, {0xAD, 0x01}, {0xB1, 0x01}, {0xB4, 0x01}, {0xB5, 0x01}, {0xB6, 0x01}, {0xB7, 0x01}, {0xB8, 0x01}, {0xB9, 0x01}, {0xBA, 0x01}, {0xBB, 0x01}, {0xBC, 0x01}, {0xBD, 0x01}, {0xBE, 0x01}, {0xBF, 0x01}, {0xC0, 0x01}, {0xC1, 0x01}, {0xC2, 0x01}, {0xC3, 0x01}, {0xC4, 0x01}, {0xC5, 0x01}, {0xC6, 0x01}, {0xC7, 0x01}, {0xC8, 0x01}, {0xC9, 0x01}, {0xCA, 0x01}, {0xCB, 0x01}, {0xCC, 0x01}, {0xCD, 0x01}, {0xCE, 0x01}, {0xCF, 0x01}, {0xD0, 0x01}, {0xD1, 0x01}, {0xD2, 0x01}, {0xD3, 0x01}, {0xD4, 0x01}, {0xD5, 0x01}, {0xD9, 0x01}, {0xDA, 0x01}, {0xDB, 0x01}, {0xDC, 0x01}, {0xDF, 0x01}, {0xE0, 0x01}, {0xE1, 0x01}, {0xE2, 0x01}, {0xE3, 0x01}, {0xE4, 0x01}, {0xE5, 0x01}, {0xE7, 0x01}, {0xE8, 0x01}, {0xEA, 0x01}, {0xEB, 0x01}, {0xEC, 0x01}, {0xED, 0x01}, {0xEF, 0x01}, {0xF2, 0x01}, {0xF3, 0x01}, {0xF4, 0x01}, {0xF7, 0x01}, {0xF8, 0x01}, {0x01, 0x02}, {0x02, 0x02}, {0x03, 0x02}, {0x04, 0x02}, {0x05, 0x02} };
+	
+	vars.random = new Random();
+	
 	print("Startup complete! CREDITS: Marenthyu <marenthyu@marenthyu.de>, Dabomstew");
 	
 }
@@ -270,6 +395,8 @@ init
 		print("Unrecognized game version. Disabling functionality.");
 		vars.gameConnected = false;
 	}
+	
+	
 }
 exit
 {
@@ -345,6 +472,199 @@ update
 		}
 		vars.timerJustStarted = false;
 		vars.timerStartedSinceBoot = true;
+		// read initial party data from memory
+		if (settings["startingparty"]) {
+			// find stcharaplayer.gbin in ram
+			var target = new SigScanTarget(0, "47 42 4E 4C 01 00 02 00 10 00 00 00 04 00 00 00 01 00 00 00 00 00 00 00 17 00 00 00 08 05 00 00 55 01 00 00 C0 73");
+			int scanOffset = 0;
+			foreach(var page in memory.MemoryPages()) {
+				var scanner = new SignatureScanner(memory, page.BaseAddress, (int)page.RegionSize);
+				if ((scanOffset = (int)scanner.Scan(target)) != 0)
+					break;
+			}
+			if(scanOffset == 0) {
+				print("Could not find stcharaplayer data, aborting");
+				return false;
+			}
+			vars.characterData = memory.ReadBytes((System.IntPtr)(scanOffset - 0x87F0), 0x8830);
+			print("Loaded initial character data.");
+		}
+		
+	}
+	// Do not run if the timer has not been started as that means some data has not yet been properly set up.
+	if (!vars.timerStartedSinceBoot) {
+	    return true;
+	}
+	
+	if(settings["startingparty"]) {
+		try {
+			if(current.Cutscene.Equals("Ch. 1 - Divine Oratorio") && !old.Cutscene.Equals("Ch. 1 - Divine Oratorio")) {
+				// write starting party
+				print("Trying to write party.");
+				int partyIdx = 0xF30;
+				vars.numCharacters = 0;
+				vars.characters = new List<ushort>();
+				print("Getting wanted characters from settings...");
+				for(int i=1;i<23;i++) {
+					if(settings["char"+i]) {
+						print("You want character " + i);
+						byte[] data = new byte[0x508];
+						System.Array.Copy(vars.characterData, i*0x508, data, 0, 0x508);
+						vars.characters.Add(BitConverter.ToUInt16(data, 4));
+						// get the character alive
+						System.Array.Copy(data, 0x50, data, 0x40, 0x10);
+						memory.WriteBytes((System.IntPtr) (current.SaveBlock + partyIdx), data);
+						if(vars.numCharacters<4) {
+							byte[] id = new byte[2];
+							System.Array.Copy(data, 4, id, 0, 2);
+							memory.WriteBytes((System.IntPtr)(current.SaveBlock + 0xCA44 + vars.numCharacters*2), id);
+							if(vars.numCharacters == 0) {
+								// leader
+								memory.WriteBytes((System.IntPtr)(current.SaveBlock + 0xCA30), id);
+							}
+						}
+						partyIdx += 0x508;
+						vars.numCharacters++;
+					}
+				}
+				// clear the rest of the party
+				if(vars.numCharacters<4) {
+					byte[] emptyParty = new byte[(4-vars.numCharacters)*2];
+					memory.WriteBytes((System.IntPtr)(current.SaveBlock + 0xCA44 + vars.numCharacters*2), emptyParty);
+				}
+				
+				// add ghost nepgear for 1v1 fights if she's absent (the game will take care of uni for us)
+				if(!settings["char5"]) {
+					byte[] data = new byte[0x508];
+					System.Array.Copy(vars.characterData, 5*0x508, data, 0, 0x508);
+					// get the character alive
+					System.Array.Copy(data, 0x50, data, 0x40, 0x10);
+					// disable character
+					data[0x00] = (byte) 0x44;
+					memory.WriteBytes((System.IntPtr) (current.SaveBlock + partyIdx), data);
+				}
+				
+				vars.inGhostNepgear = false;
+			}
+			
+			// ghost nepgear
+			if(!settings["char5"]) {
+				// when we need gear for a fixed party fight, add her back and load appropriate data from an any% speedrun to make it fair
+				if(vars.nepgearCutscenes.ContainsKey(current.Cutscene) && !old.Cutscene.Equals(current.Cutscene)) {
+					byte[] data = System.Convert.FromBase64String(vars.nepgearCutscenes[current.Cutscene]);
+					int ngIndex = vars.dataIndexOfCharacter(memory, current.SaveBlock, 6);
+					print("Nepgear Index="+ngIndex);
+					print("Data Length="+data.Length);
+					memory.WriteBytes((System.IntPtr) (current.SaveBlock + 0xF30 + ngIndex*0x508), data);
+					vars.inGhostNepgear = true;
+				}
+				if(System.Array.Exists((String[]) vars.delGearCutscenes, element => element.Equals(current.Cutscene)) && !old.Cutscene.Equals(current.Cutscene)) {
+					// re-disable nepgear
+					int ngIndex = vars.dataIndexOfCharacter(memory, current.SaveBlock, 6);
+					vars.setStatusByte(memory, current.SaveBlock, ngIndex, (byte) 0x44);
+					vars.inGhostNepgear = false;
+				}
+			}
+			
+			// ghost uni
+			if(!settings["char6"]) {
+				if(vars.uniCutscenes.ContainsKey(current.Cutscene) && !old.Cutscene.Equals(current.Cutscene)) {
+					byte[] data = System.Convert.FromBase64String(vars.uniCutscenes[current.Cutscene]);
+					int uIndex = vars.dataIndexOfCharacter(memory, current.SaveBlock, 8);
+					print("Uni Index="+uIndex);
+					print("Data Length="+data.Length);
+					memory.WriteBytes((System.IntPtr) (current.SaveBlock + 0xF30 + uIndex*0x508), data);
+					vars.inGhostUni = true;
+				}
+				if(System.Array.Exists((String[]) vars.delUniCutscenes, element => element.Equals(current.Cutscene)) && !old.Cutscene.Equals(current.Cutscene)) {
+					int uIndex = vars.dataIndexOfCharacter(memory, current.SaveBlock, 8);
+					vars.setStatusByte(memory, current.SaveBlock, uIndex, (byte) 0x44);
+					vars.inGhostUni = false;
+				}
+			}
+			
+			// deal with any party members we dont want / do want
+			try {
+			if(!((IDictionary<String, object>)vars).ContainsKey("characters") || vars.characters.Count == 0) {
+				// re-establish characters from preferences
+				print("Re-establishing wanted characters from Settings");
+				vars.characters = new List<ushort>();
+				for(int i=1;i<23;i++) {
+					if(settings["char"+i]) {
+						vars.characters.Add(BitConverter.ToUInt16(vars.characterData, i*0x508 + 4));
+					}
+				}
+				print(String.Join("; ", vars.characters));
+			}
+			} catch {
+			print("you dun goofed up");
+			}
+			if(!vars.inGhostNepgear && !vars.inGhostUni && !System.Array.Exists((String[]) vars.introCutscenes, element => element.Equals(current.Cutscene))) {
+				vars.partyCheckTick++;
+				if(vars.partyCheckTick % 10 == 0)
+				{
+					//print("Checking party...");
+					//print(String.Join("; ", vars.characters)); 
+					int dataIdx = 0;
+					while(vars.getMemberAtDataSlot(memory, current.SaveBlock, dataIdx) > 0) {
+						byte status = vars.getStatusByte(memory, current.SaveBlock, dataIdx);
+						
+						if(((status & 0x40) == 0) != vars.characters.Contains(vars.getMemberAtDataSlot(memory, current.SaveBlock, dataIdx))) {
+							// get them back in or remove them again
+							vars.setStatusByte(memory, current.SaveBlock, dataIdx, (byte) (status ^ 0x40));
+						}
+						dataIdx++;
+					}
+					
+					int partyMembers = 0;
+					for(int p=0;p<4;p++) {
+						if(vars.getMemberAtPartySlot(memory, current.SaveBlock, p) > 0) {
+							if(!vars.characters.Contains(vars.getMemberAtPartySlot(memory, current.SaveBlock, p))) {
+								// clear bad characters
+								vars.setMemberAtPartySlot(memory, current.SaveBlock, p, (ushort) 0);
+							}
+							else {
+								partyMembers++;
+							}
+						}
+					}
+					
+					if(partyMembers == 0) {
+						// attempt to rescue a crash by force-setting a single party member
+						vars.setMemberAtPartySlot(memory, current.SaveBlock, 0, vars.characters[0]);
+						vars.setPartyLeader(memory, current.SaveBlock, vars.characters[0]);
+					}
+				}
+			}
+			
+		} catch {}
+	}
+	
+	if (settings["memoryedits"]) {
+		if (settings["randommodels"]) {
+			
+				if(!current.Cutscene.Equals(old.Cutscene)) {
+					print("Changing models as cutscene changed...");
+					for (int i = 0;i<4;i++) {
+						try {
+							if (settings["randommodel" + i]) {
+								// Two-dimensional array has weird lengths...
+								int r = vars.random.Next(vars.models.Length/2);
+								int member = vars.getMemberAtPartySlot(memory, current.SaveBlock, i);
+								//print("Member ID at slot " + i + " is " + member);
+								int index = vars.dataIndexOfCharacter(memory, current.SaveBlock, member);
+								//print("Character dataIndex: " + index);
+								vars.setModelBytes(memory, current.SaveBlock, index, vars.models[r, 0], vars.models[r, 1]);
+								vars.deleteCostumeBytes(memory, current.SaveBlock, index);
+							}
+						} catch (Exception e) {
+							print("Error checking for character " + i + ", skipping model swap");
+							print(e.Message);
+						}
+					}
+				}
+			
+		}
 	}
 }
 split
@@ -562,6 +882,9 @@ split
 start
 {
 	// New Game
+	if(!current.Cutscene.Equals(old.Cutscene)) {
+		print("Cutscene changed, new cutscene: " + current.Cutscene);
+	}
 	if (settings["startnewgame"] && (current.Cutscene != null && current.Cutscene.Equals("New Game")))
 	{
 		return true;
