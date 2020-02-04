@@ -1,14 +1,14 @@
 state("NeptuniaRebirth2", "Steam")
 {
-	int SaveBlock : 0x442F50;
-	string64 Cutscene : 0x442F50, 0xEEC;
-	int EnemyBookSize : 0x442F50, 0x783F4;
-	int InventorySize : 0x442F50, 0xCA4C;
-	byte PlaneptuneShares : 0x442F50, 0xF1C;
-	byte LeanboxShares : 0x442F50, 0xF20;
-	byte LastationShares : 0x442F50, 0xF24;
-	byte LoweeShares : 0x442F50, 0xF28;
-	byte LeanboxConquestFlag : 0x442F50, 0x7ED;
+	int SaveBlock : 0x443310;
+	string64 Cutscene : 0x443310, 0xEEC;
+	int EnemyBookSize : 0x443310, 0x783F4;
+	int InventorySize : 0x443310, 0xCA4C;
+	byte PlaneptuneShares : 0x443310, 0xF1C;
+	byte LeanboxShares : 0x443310, 0xF20;
+	byte LastationShares : 0x443310, 0xF24;
+	byte LoweeShares : 0x443310, 0xF28;
+	byte LeanboxConquestFlag : 0x443310, 0x7ED;
 }
 state("NeptuniaRebirth2", "GoG")
 {
@@ -882,7 +882,7 @@ split
 start
 {
 	// New Game
-	if(!current.Cutscene.Equals(old.Cutscene)) {
+	if(current.Cutscene != null && !current.Cutscene.Equals(old.Cutscene)) {
 		print("Cutscene changed, new cutscene: " + current.Cutscene);
 	}
 	if (settings["startnewgame"] && (current.Cutscene != null && current.Cutscene.Equals("New Game")))
