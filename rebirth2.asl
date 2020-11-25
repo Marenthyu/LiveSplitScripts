@@ -187,6 +187,11 @@ startup
 	
 	settings.Add("Ch. 5 - Deity of Sin Revives", true, "Killed CFW Magic", "ch5");
 	
+	// Chapter 6
+	settings.Add("ch6", true, "Chapter 6 (Normal/True/Maker)", "cutscenes");
+	
+	settings.Add("Ch. 6 - Showdown with Arfoire!", false, "Start Chapter 6", "ch6");
+	
 	// Conquest
 	settings.Add("cq", true, "Conquest", "cutscenes");
 	
@@ -217,10 +222,12 @@ startup
 	settings.Add("trueq", true, "True End", "cutscenes");
 	
 	settings.Add("Ch. 6 - Vessel Destroyed", false, "Defeat Normal End final boss and enter True End path", "trueq");
+	settings.Add("Ch. 7 - Fetal Contraction", false, "Start Chapter 7", "trueq");
 	settings.Add("Ch. 7 - Bond of Beliefs", false, "Kill resurrected Brave", "trueq");
 	settings.Add("Ch. 7 - CFW Judge Destroyed", false, "Kill resurrected Judge", "trueq");
 	settings.Add("Ch. 7 - Nightmare's End", false, "Kill resurrected Trick", "trueq");
 	settings.Add("Ch. 7 - Battle of Fate", false, "Kill resurrected Magic", "trueq");
+	settings.Add("Finale - Defenders", false, "Start Chapter 8", "trueq");
 	settings.Add("Final - All-Time Losers", false, "Defeat the All-Time Losers (Underling & Warechu)", "trueq");
 	settings.Add("Final - Nepgear VS. True Arfoire", false, "Defeat first phase of True Arfoire", "trueq");
 	
