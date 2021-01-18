@@ -9,6 +9,7 @@ state("NeptuniaRebirth2", "Steam")
 	byte LastationShares : 0x443310, 0xF24;
 	byte LoweeShares : 0x443310, 0xF28;
 	byte LeanboxConquestFlag : 0x443310, 0x7ED;
+	int LoadingObject : 0x4C10CC, 0x18;
 }
 state("NeptuniaRebirth2", "GoG")
 {
@@ -900,4 +901,7 @@ start
 	{
 		return true;
 	}
+}
+isLoading {
+    return current.LoadingObject != 0;
 }
